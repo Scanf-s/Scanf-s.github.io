@@ -6,10 +6,10 @@ permalink: /about/
 
 # About Me
 
-Nice to meet you. My name is Ui Jong (Otty), Yang
+Nice to meet you.
 
-I enjoy to make document about what I learned and technical problem solutions as a Software Engineer  
-This Blog is to share my insights and technical experiences.
+As a Software Engineer, I enjoy documenting what I've learned and troubleshooting technical issues.  
+This blog is where I share my development journey and insights.  
 
 # Contact
 
