@@ -4,17 +4,15 @@ title: About
 permalink: /about/
 ---
 
-# About
+# About Me
 
-This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at [jekyllrb.com](https://jekyllrb.com/)
+Nice to meet you. My name is Ui Jong (Otty), Yang
 
-You can find the source code for Minima at GitHub:
-[jekyll][jekyll-organization] /
-[minima](https://github.com/jekyll/minima)
+I enjoy to make document about what I learned and technical problem solutions as a Software Engineer  
+This Blog is to share my insights and technical experiences.
 
-You can find the source code for Jekyll at GitHub:
-[jekyll][jekyll-organization] /
-[jekyll](https://github.com/jekyll/jekyll)
+# Contact
 
-
-[jekyll-organization]: https://github.com/jekyll
+You can contact me via the information below
+- **Email**: [sullung2yo@gmail.com](mailto:sullung2yo@gmail.com)
+- **LinkedIn**: [Ui Jong Yang](https://www.linkedin.com/in/ui-jong-yang)

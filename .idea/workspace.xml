@@ -4,7 +4,20 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d741291-9e29-467a-a8c4-bbd6bfde3cd9" name="Changes" comment="" />
+    <list default="true" id="5d741291-9e29-467a-a8c4-bbd6bfde3cd9" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/_config.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/_posts/2025-12-05-test.md" beforeDir="false" afterPath="$PROJECT_DIR$/_posts/2025-12-05-test.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/_posts/2025-12-05-welcome-to-jekyll.markdown" beforeDir="false" afterPath="$PROJECT_DIR$/_posts/2025-12-05-welcome-to-jekyll.markdown" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/_site/404.html" beforeDir="false" afterPath="$PROJECT_DIR$/_site/404.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/_site/about/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/_site/about/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/_site/assets/css/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/_site/assets/css/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/_site/feed.xml" beforeDir="false" afterPath="$PROJECT_DIR$/_site/feed.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/_site/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/_site/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/_site/jekyll/update/2025/12/05/welcome-to-jekyll.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/_site/test/2025/12/05/test.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/about.markdown" beforeDir="false" afterPath="$PROJECT_DIR$/about.markdown" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -57,7 +70,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1764926928413</updated>
-      <workItem from="1764926929740" duration="3638000" />
+      <workItem from="1764926929740" duration="7238000" />
     </task>
     <servers />
   </component>

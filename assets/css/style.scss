@@ -1,0 +1,121 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+/* Navigation Menu Styles */
+.main-nav {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.nav-link {
+  display: inline-block;
+  margin: 0 0.5rem;
+  padding: 0.5rem 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0.3rem;
+  transition: all 0.2s ease-in-out;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #fff;
+  text-decoration: none;
+}
+
+/* Category and Tag Styles */
+.category-list, .tag-list {
+  list-style: none;
+  padding: 0;
+}
+
+.category-item, .tag-item {
+  margin: 1rem 0;
+  padding: 1rem;
+  border-left: 4px solid #159957;
+  background-color: #f5f5f5;
+}
+
+.category-item h2, .tag-item h2 {
+  margin-top: 0;
+  color: #159957;
+}
+
+.post-list {
+  list-style: none;
+  padding-left: 1rem;
+}
+
+.post-list li {
+  margin: 0.5rem 0;
+}
+
+.post-date {
+  color: #606c71;
+  font-size: 0.9rem;
+}
+
+/* Archive Styles */
+.archive-year {
+  margin: 2rem 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #159957;
+  color: #159957;
+}
+
+.archive-list {
+  list-style: none;
+  padding: 0;
+}
+
+.archive-list li {
+  margin: 1rem 0;
+  padding-left: 1rem;
+}
+
+/* Post Meta */
+.post-meta {
+  margin: 1rem 0;
+  color: #606c71;
+}
+
+.post-categories, .post-tags {
+  display: inline-block;
+  margin-right: 1rem;
+}
+
+.post-categories a, .post-tags a {
+  display: inline-block;
+  margin: 0.2rem;
+  padding: 0.2rem 0.5rem;
+  background-color: #159957;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 0.2rem;
+  font-size: 0.85rem;
+}
+
+.post-categories a:hover, .post-tags a:hover {
+  background-color: #106d43;
+}
+
+/* Responsive Navigation */
+@media screen and (max-width: 42em) {
+  .main-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .nav-link {
+    margin: 0.25rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+}
