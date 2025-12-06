@@ -145,6 +145,8 @@ If the task fails, Cognito returns an error to the user.
 
 ## AWS Architecture
 
+![Architecture](https://github.com/user-attachments/assets/0d934be0-905a-4889-95f2-dbc9e8752b43)
+
 ## ITSupport Homepage Backend Migration Result
 
 ## PASSU Backend Migration Result
