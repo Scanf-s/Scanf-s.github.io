@@ -147,12 +147,6 @@ If the task fails, Cognito returns an error to the user.
 
 ![Architecture](https://github.com/user-attachments/assets/c08a22cb-7b2a-4a7e-b411-51d01c7f75cc)
 
-## ITSupport Homepage Backend Migration Result
-
-## PASSU Backend Migration Result
-
-## SSUNNOUNCE Backend Migration Result
-
 ---
 
 # Concerns
