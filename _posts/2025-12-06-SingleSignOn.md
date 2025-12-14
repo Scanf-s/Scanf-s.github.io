@@ -106,52 +106,67 @@ Also, For a new user, if the consumer task fails, the user record won't exist in
 
 ## 1. Implement Single Sign On service
 
+To solve the problems mentioned above, we evaluated two primary strategies: building a self-hosted provider using a framework or adopting a managed service.
+
 ### Option1. Use authlib library in Python, implement custom single sign on server
 
+The first option was to build our own Identity Provider (IdP) using Python Authlib, a powerful library for building OAuth and OpenID Connect servers.
+
+Pros: This approach offers complete control over the authentication flow and database schema. We could design the login UI exactly as we wanted and avoid vendor lock-in, maintaining full data sovereignty.
+
+Cons: However, "Great power comes with great responsibility." As detailed in the Problems section, this would force us to handle all security aspects—token signing, key rotation, CSRF protection, and compliance with strict OAuth2 standards—manually. For a student-led team with limited time and security expertise, the risk of implementation errors (and potential security breaches) was too high.
 
 ### Option2. Use AWS Cognito as SSO server
 
-## 2. Migration plan for each backend services
+The second option was to utilize AWS Cognito, a fully managed Identity as a Service (IDaaS) solution provided by AWS.
 
-### [ITSupport Student Council Homepage]
+Pros: Cognito abstracts away the complexity of the OIDC protocol. It provides built-in security features like adaptive authentication, MFA, and automated token management out of the box. Most importantly, it shifts the responsibility for security and infrastructure maintenance from our team to AWS.
 
-### [ITSupport PASSU]
+Cons: Customizing the hosted UI is limited, and there is a dependency on the AWS ecosystem (Vendor Lock-in).
 
-### [ITSupport SSUNNOUNCE]
+### Final decision
 
-## 3. User Data Synchronization Strategy using Cognito Post-Confirmation Lambda Triggers using Hybrid Pattern
+We ultimately selected Option 2: AWS Cognito. Given that our service currently has a low Monthly Active Users (MAU) count, the AWS Free Tier (up to 50,000 MAUs) makes this solution extremely cost-effective. More importantly, it allows us to focus on our core business logic rather than reinventing the wheel of authentication security. We decided that reliability and development speed outweighed the need for extreme customization.
 
-As we discussed above the problem section, I decided to apply both methods to take advantages from each method and set off the disadvantages each other.  
-In `Sign Up` process, the user data must have to be inserted on RDS table, so this process will be executed on sync mode.  
-And in `Sign in` process, user don't have to wait RDS response, because it is already in the database, we use async process on this process.  
+## 2. User Data Synchronization Strategy using Cognito Post-Confirmation Lambda Triggers using Hybrid Pattern
 
-### Sign Up Process
+As discussed in the problem section, synchronizing the Cognito User Pool with our legacy RDS table was a critical challenge. I decided to apply a Hybrid Approach that combines both synchronous and asynchronous patterns to balance data integrity with user experience.
 
-I configured the Post-Confirmation trigger for the sign-up process to ensure the operation executes synchronously.  
-Originally, our RDS instance resided in a private subnet within a separate VPC managed by another project.  
-Typically, to connect to this RDS, the Lambda function needs to be located in the same VPC.  
-However, I opted for a different approach that separating the authentication VPC from the database VPC to improve project management efficiency.  
-To connect these VPCs privately and cost-effectively, I utilized AWS VPC Peering.  
+Strategy Detail
+For Sign-Up (Synchronous): Data integrity is paramount when a user is first created. Therefore, I configured the Post-Confirmation Lambda trigger to execute synchronously. When a user confirms their email, this Lambda function fires and attempts to insert the user record into our RDS.
 
-First, I provisioned a dedicated VPC for authentication functions and established a peering connection with the database VPC.  
-Then, I implemented the Post-Confirmation Lambda function to insert user data into the RDS user table via this private connection.  
-With this setup, AWS Cognito issues tokens only if the RDS insertion succeeds.  
-If the task fails, Cognito returns an error to the user.  
-**Therefore, this architecture guarantees our user data integrity.**
+If the RDS insertion fails, the Lambda returns an error, and Cognito rolls back the sign-up.
+
+Result: This guarantees that a user exists in Cognito IF AND ONLY IF they exist in our RDS. No "ghost" users are created.
+
+For Sign-In (Asynchronous): Once a user is successfully registered, subsequent updates (e.g., last login time, profile updates) do not need to block the user's flow. For these events, we use an asynchronous pattern (via SQS or fire-and-forget Lambda invocations) to update the RDS without adding latency to the login process.
+
+Network Architecture for Synchronization
+To implement the synchronous sign-up process securely, I had to solve a network connectivity issue. Our RDS instance resides in a private subnet within a separate VPC managed by another project.
+
+Instead of exposing the database to the public internet or merging VPCs, I utilized AWS VPC Peering:
+
+I provisioned a dedicated Auth VPC for our Lambda functions.
+
+I established a Peering Connection between the Auth VPC and the Database VPC.
+
+The Post-Confirmation Lambda is deployed within the private subnet of the Auth VPC.
+
+With this setup, the Lambda function securely accesses the RDS instance via a private IP address. This architecture ensures that our database remains isolated from the public internet while allowing the authentication service to maintain strict data consistency.
 
 ---
 
-# Conclusion
+# Result
 
 ## AWS Architecture
 
-![Architecture](https://github.com/user-attachments/assets/c08a22cb-7b2a-4a7e-b411-51d01c7f75cc)
+![Architecture](https://github.com/user-attachments/assets/669ad050-0216-49a9-aaf9-8a3052b91f31)
 
-## ITSupport Homepage Backend Migration Result
+## API response time
 
-## PASSU Backend Migration Result
+### Sign up process response time
 
-## SSUNNOUNCE Backend Migration Result
+### Sign in process response time
 
 ---
 
@@ -159,6 +174,4 @@ If the task fails, Cognito returns an error to the user.
 
 ## Need of Infrastructure refactor
 
-### Comments about current Terraform project
-
-### Infrastructure enhance/migration plan using AWS CloudFormation
+## NAT Instance HA problem
