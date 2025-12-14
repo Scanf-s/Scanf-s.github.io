@@ -8,6 +8,8 @@ tags: [Infrastructure, Backend]
 
 # Overview
 
+![image](https://github.com/user-attachments/assets/587e12f6-c071-47b1-9783-6146a37c1377)
+
 The ITSupport team at Soongsil University manages diverse projects with various members in the club.  
 Every project has presentation and service layers to handle user requests and provide proper data to clients.  
 But when we develop backend applications, we always have to implement authentication logic for each project.  
@@ -39,24 +41,7 @@ Fourth, managing authorization and consent is complex.
 We need to enforce strict scope restrictions for each client.  
 Furthermore, we must build a dedicated UI to obtain and manage user consent for accessing personal data.
 
-## 2. If we implement new authentication server, how could we migrate each backend applications to use new authentication server?
-
-Let's assume we have successfully built our own SSO server.  
-The question remains: **how do we migrate all existing backend applications to this new system?**
-
-Currently, each application operates as an independent authentication server.  
-They contain their own logic to fetch user data from the RDS table, generate JWT payloads, and issue tokens.  
-
-If we leverage an SSO server, these applications no longer need to manage the lifecycle of JWTs.  
-Instead, they need to transition into purely validating the tokens provided by the SSO.  
-This means backend developers must refactor their codebases to remove the legacy issuance logic and implement a validator using the SSO’s JWK (JSON Web Key).
-
-However, this is not just a matter of deleting a few lines of code.  
-In frameworks like Spring Boot, authentication is deeply integrated into the Spring Security Filter Chain.  
-Replacing the existing logic, which often relies on `UserService` and `Database lookups`  
-with an OAuth2 Resource Server configuration requires significant re-architecting of the security context and filter layers.
-
-## 3. How do we sync the Cognito User Pool and Existing Database User Table?
+## 2. How do we sync the Cognito User Pool and Existing Database User Table?
 
 We maintain our own user table within our RDS instance, which operates independently of the Cognito User Pool.
 The challenge lies in linking these two distinct data sources.  
@@ -148,12 +133,14 @@ Furthermore, we have to manually synchronize the Cognito user pool with our exis
 
 As my decision, I selected `Option 2`.  
 Because our service currently has a low Monthly Active Users (MAU) count, the AWS Free Tier makes this solution cost-effective!  
-More importantly, it allows us to focus on our core business logic rather than implementing the wheel of authentication security.
+More importantly, it allows us to focus on our core business logic rather than handling the complexities of authentication security from scratch.
 
 ## 2. User Data Synchronization Strategy using Cognito Post-Confirmation Lambda Triggers using Hybrid Pattern
 
 > As discussed in the problem section, synchronizing the Cognito User Pool with our legacy RDS table was a critical challenge.  
 > I decided to apply a hybrid approach that combines both synchronous and asynchronous patterns to balance data integrity with user experience.
+
+![image2](https://github.com/user-attachments/assets/26ef13cf-3de6-4705-b84a-1c5d84799d26)
 
 ### For Sign-Up (Synchronous)
 Data integrity is important when a user is first created.  
@@ -200,4 +187,4 @@ Instead of exposing the database to the public internet or merging VPCs, I lever
 
 ## Need of Infrastructure refactor
 
-## NAT Instance HA problem
+## NAT Instance High Availability problem
