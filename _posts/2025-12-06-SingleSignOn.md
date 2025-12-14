@@ -64,7 +64,7 @@ The challenge lies in linking these two distinct data sources.
 The default JWT payload issued by Cognito does not contain our internal user identifiers, such as the Primary Key from our RDS table.   
 Without this identifiable information in the token, there is no direct way to map an authenticated session back to the specific user row in our existing database.
 
-Also, when leveraging AWS Cognito for our main service, we must consider:  
+Also, when leveraging AWS Cognito for our main service, we must consider:   
 **"How do we synchronize the Cognito User Pool with our RDS user table?"**
 
 A simple answer might be to use a Post-Confirmation Lambda trigger immediately after the Cognito process.  
@@ -106,53 +106,79 @@ Also, For a new user, if the consumer task fails, the user record won't exist in
 
 ## 1. Implement Single Sign On service
 
-To solve the problems mentioned above, we evaluated two primary strategies: building a self-hosted provider using a framework or adopting a managed service.
+To solve the problems mentioned above, I evaluated two primary strategies: 
+- Building a self-hosted provider using a framework
+- Adopting AWS managed service.
 
-### Option1. Use authlib library in Python, implement custom single sign on server
+### Option 1. Use authlib library in Python, implement custom single sign on server
 
-The first option was to build our own Identity Provider (IdP) using Python Authlib, a powerful library for building OAuth and OpenID Connect servers.
+> [Authlib Document](https://docs.authlib.org/en/latest/)  
+> The first option was to build our own Identity Provider (IdP) using Python Authlib.  
+This is a powerful library for building OAuth and OpenID Connect servers.
 
-Pros: This approach offers complete control over the authentication flow and database schema. We could design the login UI exactly as we wanted and avoid vendor lock-in, maintaining full data sovereignty.
+**[Pros]**  
+This approach offers complete control over the authentication flow and database schema synchronization.  
+We could design the login UI exactly as we wanted and avoid vendor lock-in.
 
-Cons: However, "Great power comes with great responsibility." As detailed in the Problems section, this would force us to handle all security aspects—token signing, key rotation, CSRF protection, and compliance with strict OAuth2 standards—manually. For a student-led team with limited time and security expertise, the risk of implementation errors (and potential security breaches) was too high.
+**[Cons]**  
+However, as mentioned in the Problems section, this would force us to handle all security aspects like:
+- token signing
+- key rotation
+- CSRF protection
+- Compliance with strict OAuth2 standards  
 
-### Option2. Use AWS Cognito as SSO server
+I think, for a student team with limited time and security expertise,  
+the risk of implementation errors, and potential security problems was too high.
 
-The second option was to utilize AWS Cognito, a fully managed Identity as a Service (IDaaS) solution provided by AWS.
+### Option 2. Use AWS Cognito as SSO server
 
-Pros: Cognito abstracts away the complexity of the OIDC protocol. It provides built-in security features like adaptive authentication, MFA, and automated token management out of the box. Most importantly, it shifts the responsibility for security and infrastructure maintenance from our team to AWS.
+> [AWS Cognito](https://docs.aws.amazon.com/cognito/latest/developerguide/what-is-amazon-cognito.html)  
+> The second option was to utilize AWS Cognito, a fully managed service solution provided by AWS.
 
-Cons: Customizing the hosted UI is limited, and there is a dependency on the AWS ecosystem (Vendor Lock-in).
+**[Pros]**  
+Cognito resolve our concerns about implementing the robust complex OAuth and OIDC logic ensuring standard protocol.    
+It provides built-in security features like adaptive authentication, MFA, and automated token management.  
+Most importantly, it shifts the responsibility for security and infrastructure maintenance from our team to AWS.  
+
+**[Cons]**  
+Customizing the hosted UI is limited, and there is a dependency on the AWS ecosystem (Vendor Lock-in).  
+Furthermore, we have to manually synchronize the Cognito user pool with our existing User database.
 
 ### Final decision
 
-We ultimately selected Option 2: AWS Cognito. Given that our service currently has a low Monthly Active Users (MAU) count, the AWS Free Tier (up to 50,000 MAUs) makes this solution extremely cost-effective. More importantly, it allows us to focus on our core business logic rather than reinventing the wheel of authentication security. We decided that reliability and development speed outweighed the need for extreme customization.
+As my decision, I selected `Option 2`.  
+Because our service currently has a low Monthly Active Users (MAU) count, the AWS Free Tier makes this solution cost-effective!  
+More importantly, it allows us to focus on our core business logic rather than implementing the wheel of authentication security.
 
 ## 2. User Data Synchronization Strategy using Cognito Post-Confirmation Lambda Triggers using Hybrid Pattern
 
-As discussed in the problem section, synchronizing the Cognito User Pool with our legacy RDS table was a critical challenge. I decided to apply a Hybrid Approach that combines both synchronous and asynchronous patterns to balance data integrity with user experience.
+> As discussed in the problem section, synchronizing the Cognito User Pool with our legacy RDS table was a critical challenge.  
+> I decided to apply a hybrid approach that combines both synchronous and asynchronous patterns to balance data integrity with user experience.
 
-Strategy Detail
-For Sign-Up (Synchronous): Data integrity is paramount when a user is first created. Therefore, I configured the Post-Confirmation Lambda trigger to execute synchronously. When a user confirms their email, this Lambda function fires and attempts to insert the user record into our RDS.
+### For Sign-Up (Synchronous)
+Data integrity is important when a user is first created.  
+Therefore, I configured the `Post-Confirmation Lambda trigger` to execute synchronously.  
+When a user sign up, post-confirmation Lambda function is triggered and attempts to insert the user record into our RDS.  
+And If the RDS insertion fails, the Lambda returns an error, and Cognito rolls back the sign-up.    
+This guarantees that a user exists in Cognito IF AND ONLY IF they exist in our RDS. No ghost users are created.  
 
-If the RDS insertion fails, the Lambda returns an error, and Cognito rolls back the sign-up.
+### For Sign-In (Asynchronous)
+Once a user is successfully registered, subsequent updates (e.g., last login time, profile updates) do not need to block the user's flow.  
+For these events, we use an asynchronous pattern via `Post-Authentication Lambda Trigger` with `SQS` to update the RDS without adding latency to the login process.
 
-Result: This guarantees that a user exists in Cognito IF AND ONLY IF they exist in our RDS. No "ghost" users are created.
+## 3. Network Architecture for user synchronization
+To implement the sign-up/sign-in process securely, I had to solve a network connectivity issue.  
+Our RDS instance resides in a private subnet within a separate VPC managed by another project.  
 
-For Sign-In (Asynchronous): Once a user is successfully registered, subsequent updates (e.g., last login time, profile updates) do not need to block the user's flow. For these events, we use an asynchronous pattern (via SQS or fire-and-forget Lambda invocations) to update the RDS without adding latency to the login process.
+Instead of exposing the database to the public internet or merging VPCs, I leveraged AWS VPC Peering feature.  
+- First, I provisioned a dedicated `Auth VPC` for our Lambda functions.
+- Second, I established a `Peering Connection` between the Auth VPC and the Database VPC.
+- Third, I configured a proper `Security Group` for connectivity and secure insurance.
+- Forth, The Post-Confirmation/Post-Authentication Lambda are deployed within the private subnet of the Auth VPC.
 
-Network Architecture for Synchronization
-To implement the synchronous sign-up process securely, I had to solve a network connectivity issue. Our RDS instance resides in a private subnet within a separate VPC managed by another project.
-
-Instead of exposing the database to the public internet or merging VPCs, I utilized AWS VPC Peering:
-
-I provisioned a dedicated Auth VPC for our Lambda functions.
-
-I established a Peering Connection between the Auth VPC and the Database VPC.
-
-The Post-Confirmation Lambda is deployed within the private subnet of the Auth VPC.
-
-With this setup, the Lambda function securely accesses the RDS instance via a private IP address. This architecture ensures that our database remains isolated from the public internet while allowing the authentication service to maintain strict data consistency.
+> With this setup, the Lambda function securely accesses the RDS instance via a private IP address.  
+> This architecture ensures that our database remains isolated from the public internet  
+> while allowing the authentication service to maintain strict data consistency.
 
 ---
 
