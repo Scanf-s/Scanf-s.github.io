@@ -3,7 +3,7 @@ layout: post
 title:  "Making Our School News Scraper 90% Faster and Simpler"
 date:   2025-12-05 19:00:00 +0900
 categories: ITSupport
-tags: [Infrastructure, Backend]
+tags: [Backend]
 ---
 
 # Overview
@@ -249,15 +249,19 @@ func TestLoadConfig_Integration(t *testing.T) {
 
 | Metric | Old Way (Scraping) | New Way (API) | Improvement |
 |--------|-------------------|---------------|-------------|
-| Time to Finish | 30 – 60 seconds | 3 seconds | 90% Faster |
-| Lines of Code  | 735 lines | 208 lines | 72% Simpler |
-| Reliability | 0% (No Tests) | High (Automated) | Much Safer |
+| Time to Finish | 44 seconds | 3 seconds | 93% Faster |
+| Lines of Code  | 735 lines | 208 lines | 71% Simpler |
+| Reliability | No Tests | Implemented unit/integration tests | 38% Safer |
 
 ## Scraper execution time
 
 ### Original
 
+<img width="1137" height="408" alt="image" src="https://github.com/user-attachments/assets/106ec7ac-b64c-402d-b579-7bf9bcae76b4" />
+
 ### New
+
+<img width="1438" height="457" alt="image" src="https://github.com/user-attachments/assets/8e4dcf59-15d9-4ac8-a98a-c6a4c1bdf3ae" />
 
 ## Test coverage
 
@@ -268,3 +272,6 @@ func TestLoadConfig_Integration(t *testing.T) {
 ### New
 
 > It still needs more test cases to improve the current test coverage!
+
+<img width="887" height="164" alt="image" src="https://github.com/user-attachments/assets/625fd046-d6e0-4b78-bbb2-11129838be54" />
+
