@@ -1,171 +1,105 @@
 ---
 layout: post
-title:  "Single Sign On service implementation task"
+title:  "Building a Single Sign-On (SSO) System: Our Journey with AWS Cognito"
 date:   2025-12-05 19:00:00 +0900
-categories: ITSupport
-tags: [Infrastructure, Backend]
+categories: Backend
+tags: [AWS, Golang, Python, SSO]
 ---
 
 # Overview
 
-![image](https://github.com/user-attachments/assets/587e12f6-c071-47b1-9783-6146a37c1377)
+The ITSupport team at Soongsil University manages a wide variety of digital projects. 
+From community boards to event management systems, we have a lot going on. 
+However, every time we started a new project, we hit the same wall
 
-The ITSupport team at Soongsil University manages diverse projects with various members in the club.  
-Every project has presentation and service layers to handle user requests and provide proper data to clients.  
-But when we develop backend applications, we always have to implement authentication logic for each project.  
-This consumes a lot of development resources, and inexperienced developers are managing JWT themselves, so security issues always exist.
-To solve the current inefficient process, we decided to apply a Single Sign-On service to our services
+> we had to build a brand-new login system from scratch for every single application.
 
-# Problems
+Writing this authentication code again and again was not just a waste of time. It has also a security risk. 
+If a developer made even a small mistake with security—like incorrectly managing JWT (JSON Web Tokens),
+it could lead to serious vulnerabilities. 
 
-## 1. Can We Build Our Own SSO Service?
-
-Implementing an SSO service from scratch is not as simple as it appears.  
-It requires us to become an Identity Provider—similar to Google, Apple, or GitHub and centrally manage access across services.  
-This brings with it numerous technical hurdles and operational responsibilities.
-
-First, strict security is non-negotiable.  
-SSO creates a Single Point of Failure.  
-We must be thoroughly prepared for threats like CSRF, XSS, token sniffing, and replay attacks.  
-This demands extensive security knowledge and resources, as a breach in the SSO server would be critical for user trust.
-
-Second, complying to standards is challenging.  
-Implementing a flawless OAuth2 and OIDC protocol is difficult.  
-We need to support various grant types (e.g., Authorization Code, Client Credentials) and implement security measures like PKCE to protect SPA clients from token sniffing.
-
-Third, we need a precise key management system.  
-To establish trust, we must handle token rotation, access management, and revocation logic ourselves.  
-This involves signing tokens with asymmetric cryptography and regularly rotating keys while maintaining a JWK endpoint for client verification.
-
-Fourth, managing authorization and consent is complex.  
-We need to enforce strict scope restrictions for each client.  
-Furthermore, we must build a dedicated UI to obtain and manage user consent for accessing personal data.
-
-## 2. How do we sync the Cognito User Pool and Existing Database User Table?
-
-We maintain our own user table within our RDS instance, which operates independently of the Cognito User Pool.
-The challenge lies in linking these two distinct data sources.  
-
-The default JWT payload issued by Cognito does not contain our internal user identifiers, such as the Primary Key from our RDS table.   
-Without this identifiable information in the token, there is no direct way to map an authenticated session back to the specific user row in our existing database.
-
-Also, when leveraging AWS Cognito for our main service, we must consider:   
-**"How do we synchronize the Cognito User Pool with our RDS user table?"**
-
-A simple answer might be to use a Post-Confirmation Lambda trigger immediately after the Cognito process.  
-However, in my case, I have to carefully consider both data integrity and user experience.
-
-Cognito provides Lambda triggers for events before and after authentication.  
-Typically, we use a post-process Lambda function to insert or update user data in the RDS user table.  
-There are two primary approaches to achieve this:
-
-### 1. Insert and Update in synchronous way
-
-If we adopt a synchronous approach, the user must wait until the RDS task is complete.
-
-**[Pros]**    
-This ensures the user is successfully created in the RDS user table, making the service more robust in terms of data integrity.
-
-**[Cons]**  
-If the job fails, the user cannot receive tokens from Cognito.  
-Furthermore, if the database task is delayed or times out, the user has to wait too long, or the login process might fail entirely.  
-This can negatively impact the user experience.
-
-### 2. Insert and Update in asynchronous way
-
-If we use an asynchronous approach, the user doesn't have to wait for the RDS task to finish.  
-The Post-Confirmation Lambda sends a message to AWS SQS and returns immediately.  
-This allows the user to proceed without waiting for the RDS operation.
-
-**[Pros]**  
-It significantly improves the user experience by reducing latency.
-
-**[Cons]**   
-However, this method also has disadvantages.  
-If a user requests their data immediately after logging in, but the SQS consumer hasn't inserted the data into RDS yet, the user might receive a 404 error despite being signed in.
-Also, For a new user, if the consumer task fails, the user record won't exist in the database, tainting data integrity.
+To stop this cycle and make our apps much safer, we decided to build a Single Sign-On (SSO) system. 
+With SSO, a user only needs to remember one account to access every service we provide.
 
 ---
 
-# Solution
+# Problems
 
-## 1. Implement Single Sign On service
+> Building an SSO system is harder than it looks. We faced two main challenges
 
-To solve the problems mentioned above, I evaluated two primary strategies: 
-- Building a self-hosted provider using a framework
-- Adopting AWS managed service.
+## 1. Should we build our own SSO service?
 
-### Option 1. Use authlib library in Python, implement custom single sign on server
+Creating a custom login service is a massive engineering task. 
+It means we have to become an "Identity Provider" (IdP), similar to how Google or GitHub works. 
+This brings heavy responsibilities!
 
-> [Authlib Document](https://docs.authlib.org/en/latest/)  
-> The first option was to build our own Identity Provider (IdP) using Python Authlib.  
-This is a powerful library for building OAuth and OpenID Connect servers.
+- `Big Security Risks`: An SSO server is a "Single Point of Failure." If it gets hacked, every single connected service is in danger. We would have to build defenses against complex attacks like CSRF (tricking users into taking actions) and XSS (injecting malicious scripts).
 
-**[Pros]**  
-This approach offers complete control over the authentication flow and database schema synchronization.  
-We could design the login UI exactly as we wanted and avoid vendor lock-in.
+- `Complex International Rules`: Following standards like OAuth2 and OIDC is very difficult for a student team. These protocols have many "rules" that must be followed perfectly to keep data safe.
 
-**[Cons]**  
-However, as mentioned in the Problems section, this would force us to handle all security aspects like:
-- token signing
-- key rotation
-- CSRF protection
-- Compliance with strict OAuth2 standards  
+- `Managing Secret Keys`: We would have to handle "Asymmetric Cryptography" to sign tokens. This means managing secret keys and rotating them regularly. One small mistake in this process could break the login for every user at once.
 
-I think, for a student team with limited time and security expertise,  
-the risk of implementation errors, and potential security problems was too high.
+## 2. Syncing Data Between Cognito and Our Database
 
-### Option 2. Use AWS Cognito as SSO server
+We already had a user table in our AWS RDS (Database) from previous projects. If we moved to AWS Cognito, we would suddenly have user data living in two different places.
 
-> [AWS Cognito](https://docs.aws.amazon.com/cognito/latest/developerguide/what-is-amazon-cognito.html)  
-> The second option was to utilize AWS Cognito, a fully managed service solution provided by AWS.
+This created two big questions:
 
-**[Pros]**  
-Cognito resolve our concerns about implementing the robust complex OAuth and OIDC logic ensuring standard protocol.    
-It provides built-in security features like adaptive authentication, MFA, and automated token management.  
-Most importantly, it shifts the responsibility for security and infrastructure maintenance from our team to AWS.  
+- `Linking Identifiers`: Cognito gives users its own ID numbers, but our database has its own "Primary Keys." How do we connect "User A" in Cognito to the correct row in our RDS table?
 
-**[Cons]**  
-Customizing the hosted UI is limited, and there is a dependency on the AWS ecosystem (Vendor Lock-in).  
-Furthermore, we have to manually synchronize the Cognito user pool with our existing User database.
+- `Staying in Sync`: When a new student joins through Cognito, how do we make sure they are automatically and correctly added to our internal database? We couldn't afford to have missing data.
 
-### Final decision
+---
 
-As my decision, I selected `Option 2`.  
-Because our service currently has a low Monthly Active Users (MAU) count, the AWS Free Tier makes this solution cost-effective!  
-More importantly, it allows us to focus on our core business logic rather than handling the complexities of authentication security from scratch.
+# Solutions
 
-## 2. User Data Synchronization Strategy using Cognito Post-Confirmation Lambda Triggers using Hybrid Pattern
+## 1. Choosing AWS Cognito
 
-> As discussed in the problem section, synchronizing the Cognito User Pool with our legacy RDS table was a critical challenge.  
-> I decided to apply a hybrid approach that combines both synchronous and asynchronous patterns to balance data integrity with user experience.
+We carefully compared two options. 
+Building our own custom server using a library like `Authlib`, or using a managed service from `AWS`.
 
-![image2](https://github.com/user-attachments/assets/26ef13cf-3de6-4705-b84a-1c5d84799d26)
+In the end, we chose `AWS Cognito`. 
+For a team of our size, it is very cost-effective because of the AWS Free Tier. 
+More importantly, AWS handles all the difficult security work. 
+This allows our team to stop worrying about hackers and focus on building cool features that students actually use.
 
-### For Sign-Up (Synchronous)
-Data integrity is important when a user is first created.  
-Therefore, I configured the `Post-Confirmation Lambda trigger` to execute synchronously.  
-When a user sign up, post-confirmation Lambda function is triggered and attempts to insert the user record into our RDS.  
-And If the RDS insertion fails, the Lambda returns an error, and Cognito rolls back the sign-up.    
-This guarantees that a user exists in Cognito IF AND ONLY IF they exist in our RDS. No ghost users are created.  
+## 2. The Hybrid Way to Sync User Data
 
-### For Sign-In (Asynchronous)
-Once a user is successfully registered, subsequent updates (e.g., last login time, profile updates) do not need to block the user's flow.  
-For these events, we use an asynchronous pattern via `Post-Authentication Lambda Trigger` with `SQS` to update the RDS without adding latency to the login process.
+> To make sure our RDS database and Cognito stayed perfectly in sync, we used AWS Lambda Triggers. 
+> We designed a `Hybrid` strategy that changes its behavior depending on what the user is doing.
 
-## 3. Network Architecture for user synchronization
-To implement the sign-up/sign-in process securely, I had to solve a network connectivity issue.  
-Our RDS instance resides in a private subnet within a separate VPC managed by another project.  
+### Sign-Up: Synchronous way
 
-Instead of exposing the database to the public internet or merging VPCs, I leveraged AWS VPC Peering feature.  
-- First, I provisioned a dedicated `Auth VPC` for our Lambda functions.
-- Second, I established a `Peering Connection` between the Auth VPC and the Database VPC.
-- Third, I configured a proper `Security Group` for connectivity and secure insurance.
-- Forth, The Post-Confirmation/Post-Authentication Lambda are deployed within the private subnet of the Auth VPC.
+> When a user signs up using a social provider, the logic is different depending on the platform:
 
-> With this setup, the Lambda function securely accesses the RDS instance via a private IP address.  
-> This architecture ensures that our database remains isolated from the public internet  
-> while allowing the authentication service to maintain strict data consistency.
+- `Kakao Login`: Many students already have records in our RDS associated with their Kakao Identity. 
+If the Kakao ID already exists in our database, the Lambda updates that record with the new cognito_sub. 
+This links the old account with the new SSO system. If the user is new, we create a completely new record in the RDS.
+
+- `Google Login`: For Google users, we simply create a new user record in the RDS and save the cognito_sub.
+
+> This logic ensures that every user in Cognito is perfectly mapped to a userId in our database. 
+> We also store the RDS userId in a Cognito Custom Attribute, so it is included in the JWT token for all our apps to use.
+
+### Sign-In: Asynchronous way
+
+When an existing user logs in, we usually just want to update minor things, like their "last login time." 
+This doesn't need to be perfect right away.
+
+We use a Lambda function that sends a quick message to AWS SQS (a waiting line for data) and finishes instantly.
+The user is logged in immediately without waiting for the database to finish its update. 
+This keeps the login experience fast and smooth.
+
+### Connecting the Networks Safely
+
+Our database is hidden in a `Private Subnet` to keep it safe from the public internet.  
+To let our login functions talk to the database securely, we used a feature called VPC Peering.
+
+- `Separate Network`: We built a dedicated `Auth VPC` just for our login functions.
+
+- `The Private Bridge`: We connected this `Auth VPC` to our `Database VPC` using a private bridge (VPC Peering).
+
+- `Digital Gatekeepers`: We used Security Groups to ensure that only our specific login functions are allowed to cross the bridge and talk to the database. No one else from the outside can get in.
 
 ---
 
@@ -182,9 +116,3 @@ Instead of exposing the database to the public internet or merging VPCs, I lever
 ### Sign in process response time
 
 ---
-
-# Concerns
-
-## Need of Infrastructure refactor
-
-## NAT Instance High Availability problem
