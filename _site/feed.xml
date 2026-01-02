@@ -1,19 +1,1420 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.10.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2025-12-05T20:01:06+09:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Otty.Yang’s Document</title><subtitle>Technical document</subtitle><entry><title type="html">Test Post</title><link href="http://localhost:4000/test/2025/12/05/test/" rel="alternate" type="text/html" title="Test Post" /><published>2025-12-05T19:00:00+09:00</published><updated>2025-12-05T19:00:00+09:00</updated><id>http://localhost:4000/test/2025/12/05/test</id><content type="html" xml:base="http://localhost:4000/test/2025/12/05/test/"><![CDATA[<h2 id="nice-to-meet-you">Nice to meet you</h2>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ko-KR"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" hreflang="ko-KR" /><updated>2026-01-02T18:36:46+09:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Otty.Yang’s Document</title><subtitle>Technical document for development and learning</subtitle><entry><title type="html">Single Sign On service implementation task</title><link href="http://localhost:4000/posts/SingleSignOn/" rel="alternate" type="text/html" title="Single Sign On service implementation task" /><published>2025-12-05T19:00:00+09:00</published><updated>2025-12-05T19:00:00+09:00</updated><id>http://localhost:4000/posts/SingleSignOn</id><content type="html" xml:base="http://localhost:4000/posts/SingleSignOn/"><![CDATA[<h1 id="overview">Overview</h1>
 
-<h2 id="i-hope-you-have-a-great-day">I hope you have a great day</h2>]]></content><author><name></name></author><category term="test" /><category term="test" /><category term="sample" /><summary type="html"><![CDATA[Nice to meet you]]></summary></entry><entry><title type="html">Welcome to Jekyll!</title><link href="http://localhost:4000/jekyll/update/2025/12/05/welcome-to-jekyll/" rel="alternate" type="text/html" title="Welcome to Jekyll!" /><published>2025-12-05T18:33:55+09:00</published><updated>2025-12-05T18:33:55+09:00</updated><id>http://localhost:4000/jekyll/update/2025/12/05/welcome-to-jekyll</id><content type="html" xml:base="http://localhost:4000/jekyll/update/2025/12/05/welcome-to-jekyll/"><![CDATA[<p>You’ll find this post in your <code class="language-plaintext highlighter-rouge">_posts</code> directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run <code class="language-plaintext highlighter-rouge">jekyll serve</code>, which launches a web server and auto-regenerates your site when a file is updated.</p>
+<p><img src="https://github.com/user-attachments/assets/587e12f6-c071-47b1-9783-6146a37c1377" alt="image" /></p>
 
-<p>Jekyll requires blog post files to be named according to the following format:</p>
+<p>The ITSupport team at Soongsil University manages diverse projects with various members in the club.<br />
+Every project has presentation and service layers to handle user requests and provide proper data to clients.<br />
+But when we develop backend applications, we always have to implement authentication logic for each project.<br />
+This consumes a lot of development resources, and inexperienced developers are managing JWT themselves, so security issues always exist.
+To solve the current inefficient process, we decided to apply a Single Sign-On service to our services</p>
 
-<p><code class="language-plaintext highlighter-rouge">YEAR-MONTH-DAY-title.MARKUP</code></p>
+<h1 id="problems">Problems</h1>
 
-<p>Where <code class="language-plaintext highlighter-rouge">YEAR</code> is a four-digit number, <code class="language-plaintext highlighter-rouge">MONTH</code> and <code class="language-plaintext highlighter-rouge">DAY</code> are both two-digit numbers, and <code class="language-plaintext highlighter-rouge">MARKUP</code> is the file extension representing the format used in the file. After that, include the necessary front matter. Take a look at the source for this post to get an idea about how it works.</p>
+<h2 id="1-can-we-build-our-own-sso-service">1. Can We Build Our Own SSO Service?</h2>
 
-<p>Jekyll also offers powerful support for code snippets:</p>
+<p>Implementing an SSO service from scratch is not as simple as it appears.<br />
+It requires us to become an Identity Provider—similar to Google, Apple, or GitHub and centrally manage access across services.<br />
+This brings with it numerous technical hurdles and operational responsibilities.</p>
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nf">print_hi</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
-  <span class="nb">puts</span> <span class="s2">"Hi, </span><span class="si">#{</span><span class="nb">name</span><span class="si">}</span><span class="s2">"</span>
-<span class="k">end</span>
-<span class="n">print_hi</span><span class="p">(</span><span class="s1">'Tom'</span><span class="p">)</span>
-<span class="c1">#=&gt; prints 'Hi, Tom' to STDOUT.</span></code></pre></figure>
+<p>First, strict security is non-negotiable.<br />
+SSO creates a Single Point of Failure.<br />
+We must be thoroughly prepared for threats like CSRF, XSS, token sniffing, and replay attacks.<br />
+This demands extensive security knowledge and resources, as a breach in the SSO server would be critical for user trust.</p>
 
-<p>Check out the <a href="https://jekyllrb.com/docs/home">Jekyll docs</a> for more info on how to get the most out of Jekyll. File all bugs/feature requests at <a href="https://github.com/jekyll/jekyll">Jekyll’s GitHub repo</a>. If you have questions, you can ask them on <a href="https://talk.jekyllrb.com/">Jekyll Talk</a>.</p>]]></content><author><name></name></author><category term="jekyll" /><category term="update" /><category term="jekyll" /><category term="tutorial" /><category term="getting-started" /><summary type="html"><![CDATA[You’ll find this post in your _posts directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run jekyll serve, which launches a web server and auto-regenerates your site when a file is updated.]]></summary></entry></feed>
+<p>Second, complying to standards is challenging.<br />
+Implementing a flawless OAuth2 and OIDC protocol is difficult.<br />
+We need to support various grant types (e.g., Authorization Code, Client Credentials) and implement security measures like PKCE to protect SPA clients from token sniffing.</p>
+
+<p>Third, we need a precise key management system.<br />
+To establish trust, we must handle token rotation, access management, and revocation logic ourselves.<br />
+This involves signing tokens with asymmetric cryptography and regularly rotating keys while maintaining a JWK endpoint for client verification.</p>
+
+<p>Fourth, managing authorization and consent is complex.<br />
+We need to enforce strict scope restrictions for each client.<br />
+Furthermore, we must build a dedicated UI to obtain and manage user consent for accessing personal data.</p>
+
+<h2 id="2-how-do-we-sync-the-cognito-user-pool-and-existing-database-user-table">2. How do we sync the Cognito User Pool and Existing Database User Table?</h2>
+
+<p>We maintain our own user table within our RDS instance, which operates independently of the Cognito User Pool.
+The challenge lies in linking these two distinct data sources.</p>
+
+<p>The default JWT payload issued by Cognito does not contain our internal user identifiers, such as the Primary Key from our RDS table. <br />
+Without this identifiable information in the token, there is no direct way to map an authenticated session back to the specific user row in our existing database.</p>
+
+<p>Also, when leveraging AWS Cognito for our main service, we must consider: <br />
+<strong>“How do we synchronize the Cognito User Pool with our RDS user table?”</strong></p>
+
+<p>A simple answer might be to use a Post-Confirmation Lambda trigger immediately after the Cognito process.<br />
+However, in my case, I have to carefully consider both data integrity and user experience.</p>
+
+<p>Cognito provides Lambda triggers for events before and after authentication.<br />
+Typically, we use a post-process Lambda function to insert or update user data in the RDS user table.<br />
+There are two primary approaches to achieve this:</p>
+
+<h3 id="1-insert-and-update-in-synchronous-way">1. Insert and Update in synchronous way</h3>
+
+<p>If we adopt a synchronous approach, the user must wait until the RDS task is complete.</p>
+
+<p><strong>[Pros]</strong>  <br />
+This ensures the user is successfully created in the RDS user table, making the service more robust in terms of data integrity.</p>
+
+<p><strong>[Cons]</strong><br />
+If the job fails, the user cannot receive tokens from Cognito.<br />
+Furthermore, if the database task is delayed or times out, the user has to wait too long, or the login process might fail entirely.<br />
+This can negatively impact the user experience.</p>
+
+<h3 id="2-insert-and-update-in-asynchronous-way">2. Insert and Update in asynchronous way</h3>
+
+<p>If we use an asynchronous approach, the user doesn’t have to wait for the RDS task to finish.<br />
+The Post-Confirmation Lambda sends a message to AWS SQS and returns immediately.<br />
+This allows the user to proceed without waiting for the RDS operation.</p>
+
+<p><strong>[Pros]</strong><br />
+It significantly improves the user experience by reducing latency.</p>
+
+<p><strong>[Cons]</strong> <br />
+However, this method also has disadvantages.<br />
+If a user requests their data immediately after logging in, but the SQS consumer hasn’t inserted the data into RDS yet, the user might receive a 404 error despite being signed in.
+Also, For a new user, if the consumer task fails, the user record won’t exist in the database, tainting data integrity.</p>
+
+<hr />
+
+<h1 id="solution">Solution</h1>
+
+<h2 id="1-implement-single-sign-on-service">1. Implement Single Sign On service</h2>
+
+<p>To solve the problems mentioned above, I evaluated two primary strategies:</p>
+<ul>
+  <li>Building a self-hosted provider using a framework</li>
+  <li>Adopting AWS managed service.</li>
+</ul>
+
+<h3 id="option-1-use-authlib-library-in-python-implement-custom-single-sign-on-server">Option 1. Use authlib library in Python, implement custom single sign on server</h3>
+
+<blockquote>
+  <p><a href="https://docs.authlib.org/en/latest/">Authlib Document</a><br />
+The first option was to build our own Identity Provider (IdP) using Python Authlib.<br />
+This is a powerful library for building OAuth and OpenID Connect servers.</p>
+</blockquote>
+
+<p><strong>[Pros]</strong><br />
+This approach offers complete control over the authentication flow and database schema synchronization.<br />
+We could design the login UI exactly as we wanted and avoid vendor lock-in.</p>
+
+<p><strong>[Cons]</strong><br />
+However, as mentioned in the Problems section, this would force us to handle all security aspects like:</p>
+<ul>
+  <li>token signing</li>
+  <li>key rotation</li>
+  <li>CSRF protection</li>
+  <li>Compliance with strict OAuth2 standards</li>
+</ul>
+
+<p>I think, for a student team with limited time and security expertise,<br />
+the risk of implementation errors, and potential security problems was too high.</p>
+
+<h3 id="option-2-use-aws-cognito-as-sso-server">Option 2. Use AWS Cognito as SSO server</h3>
+
+<blockquote>
+  <p><a href="https://docs.aws.amazon.com/cognito/latest/developerguide/what-is-amazon-cognito.html">AWS Cognito</a><br />
+The second option was to utilize AWS Cognito, a fully managed service solution provided by AWS.</p>
+</blockquote>
+
+<p><strong>[Pros]</strong><br />
+Cognito resolve our concerns about implementing the robust complex OAuth and OIDC logic ensuring standard protocol.  <br />
+It provides built-in security features like adaptive authentication, MFA, and automated token management.<br />
+Most importantly, it shifts the responsibility for security and infrastructure maintenance from our team to AWS.</p>
+
+<p><strong>[Cons]</strong><br />
+Customizing the hosted UI is limited, and there is a dependency on the AWS ecosystem (Vendor Lock-in).<br />
+Furthermore, we have to manually synchronize the Cognito user pool with our existing User database.</p>
+
+<h3 id="final-decision">Final decision</h3>
+
+<p>As my decision, I selected <code class="language-plaintext highlighter-rouge">Option 2</code>.<br />
+Because our service currently has a low Monthly Active Users (MAU) count, the AWS Free Tier makes this solution cost-effective!<br />
+More importantly, it allows us to focus on our core business logic rather than handling the complexities of authentication security from scratch.</p>
+
+<h2 id="2-user-data-synchronization-strategy-using-cognito-post-confirmation-lambda-triggers-using-hybrid-pattern">2. User Data Synchronization Strategy using Cognito Post-Confirmation Lambda Triggers using Hybrid Pattern</h2>
+
+<blockquote>
+  <p>As discussed in the problem section, synchronizing the Cognito User Pool with our legacy RDS table was a critical challenge.<br />
+I decided to apply a hybrid approach that combines both synchronous and asynchronous patterns to balance data integrity with user experience.</p>
+</blockquote>
+
+<p><img src="https://github.com/user-attachments/assets/26ef13cf-3de6-4705-b84a-1c5d84799d26" alt="image2" /></p>
+
+<h3 id="for-sign-up-synchronous">For Sign-Up (Synchronous)</h3>
+<p>Data integrity is important when a user is first created.<br />
+Therefore, I configured the <code class="language-plaintext highlighter-rouge">Post-Confirmation Lambda trigger</code> to execute synchronously.<br />
+When a user sign up, post-confirmation Lambda function is triggered and attempts to insert the user record into our RDS.<br />
+And If the RDS insertion fails, the Lambda returns an error, and Cognito rolls back the sign-up.  <br />
+This guarantees that a user exists in Cognito IF AND ONLY IF they exist in our RDS. No ghost users are created.</p>
+
+<h3 id="for-sign-in-asynchronous">For Sign-In (Asynchronous)</h3>
+<p>Once a user is successfully registered, subsequent updates (e.g., last login time, profile updates) do not need to block the user’s flow.<br />
+For these events, we use an asynchronous pattern via <code class="language-plaintext highlighter-rouge">Post-Authentication Lambda Trigger</code> with <code class="language-plaintext highlighter-rouge">SQS</code> to update the RDS without adding latency to the login process.</p>
+
+<h2 id="3-network-architecture-for-user-synchronization">3. Network Architecture for user synchronization</h2>
+<p>To implement the sign-up/sign-in process securely, I had to solve a network connectivity issue.<br />
+Our RDS instance resides in a private subnet within a separate VPC managed by another project.</p>
+
+<p>Instead of exposing the database to the public internet or merging VPCs, I leveraged AWS VPC Peering feature.</p>
+<ul>
+  <li>First, I provisioned a dedicated <code class="language-plaintext highlighter-rouge">Auth VPC</code> for our Lambda functions.</li>
+  <li>Second, I established a <code class="language-plaintext highlighter-rouge">Peering Connection</code> between the Auth VPC and the Database VPC.</li>
+  <li>Third, I configured a proper <code class="language-plaintext highlighter-rouge">Security Group</code> for connectivity and secure insurance.</li>
+  <li>Forth, The Post-Confirmation/Post-Authentication Lambda are deployed within the private subnet of the Auth VPC.</li>
+</ul>
+
+<blockquote>
+  <p>With this setup, the Lambda function securely accesses the RDS instance via a private IP address.<br />
+This architecture ensures that our database remains isolated from the public internet<br />
+while allowing the authentication service to maintain strict data consistency.</p>
+</blockquote>
+
+<hr />
+
+<h1 id="result">Result</h1>
+
+<h2 id="aws-architecture">AWS Architecture</h2>
+
+<p><img src="https://github.com/user-attachments/assets/669ad050-0216-49a9-aaf9-8a3052b91f31" alt="Architecture" /></p>
+
+<h2 id="api-response-time">API response time</h2>
+
+<h3 id="sign-up-process-response-time">Sign up process response time</h3>
+
+<h3 id="sign-in-process-response-time">Sign in process response time</h3>
+
+<hr />
+
+<h1 id="concerns">Concerns</h1>
+
+<h2 id="need-of-infrastructure-refactor">Need of Infrastructure refactor</h2>
+
+<h2 id="nat-instance-high-availability-problem">NAT Instance High Availability problem</h2>]]></content><author><name></name></author><category term="ITSupport" /><category term="Infrastructure" /><category term="Backend" /><summary type="html"><![CDATA[Overview]]></summary></entry><entry><title type="html">Making Our School News Scraper 90% Faster and Simpler</title><link href="http://localhost:4000/posts/SSUnnounce-Scraper/" rel="alternate" type="text/html" title="Making Our School News Scraper 90% Faster and Simpler" /><published>2025-12-05T19:00:00+09:00</published><updated>2025-12-05T19:00:00+09:00</updated><id>http://localhost:4000/posts/SSUnnounce-Scraper</id><content type="html" xml:base="http://localhost:4000/posts/SSUnnounce-Scraper/"><![CDATA[<h1 id="overview">Overview</h1>
+
+<p>In December 2025, I fixed a big problem with my project: the SSU Announcement Scraper.<br />
+This tool checks school news and sends alerts to students. For a long time, the old version was slow, expensive, and broke very easily.</p>
+
+<p>To solve this, I performed a major “clean-up.”<br />
+I deleted 700 lines of old code and made the system much faster and more reliable.<br />
+Here is a detailed look at how I transformed a “fragile” prototype into a strong service.</p>
+
+<h1 id="problems">Problems</h1>
+
+<blockquote>
+  <p>The old version used a “Headless Chrome” browser inside AWS Lambda to visit the school portal.<br />
+While this worked at first, it was a bad way to build a long-term service because…</p>
+</blockquote>
+
+<h2 id="1it-was-too-heavy">1.It was too heavy</h2>
+<p>Running a whole browser just to read a few lines of text uses a massive amount of memory.<br />
+It is like using a big heavy truck to deliver a single small letter.<br />
+Every time the scraper ran, the system had to “start the engine” (Chrome), which wasted resources.</p>
+
+<h2 id="2-it-was-slow-and-expensive">2. It was slow and expensive</h2>
+<p>Because it had to load images, scripts, and styles, it took 30 to 60 seconds to finish.<br />
+In the cloud world (AWS), time is money.<br />
+Long execution times meant higher monthly bills.</p>
+
+<h2 id="3-it-broke-easily-maintenance-problem">3. It broke easily (Maintenance problem)</h2>
+<p>If the school changed just one small thing on their website—like a button color or a table name—the scraper would stop working.<br />
+I had to spend hours every week fixing the code manually just to keep it running.</p>
+
+<h2 id="4-no-safety-net-no-tests">4. No safety net (No tests)</h2>
+<p>I didn’t have any automated tests to check if the code was working.<br />
+This meant I only found out about bugs after the service stopped sending news to students.</p>
+
+<hr />
+
+<h1 id="solutions">Solutions</h1>
+
+<blockquote>
+  <p>The biggest change was stopping the “web scraping” entirely.<br />
+Instead of looking at the website like a human, I found a way to talk to a server directly using an API called <code class="language-plaintext highlighter-rouge">SSUFID</code>.</p>
+</blockquote>
+
+<h2 id="1-cleaning-and-organizing-the-code">1. Cleaning and Organizing the Code</h2>
+
+<p>I deleted the messy old code and wrote a new, unified system.</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">Old code</code>: 700+ lines of messy logic and complicated HTML rules.</li>
+  <li><code class="language-plaintext highlighter-rouge">New code</code>: Only 200 lines of clean, simple code.</li>
+</ul>
+
+<blockquote>
+  <p>Result: A 72% reduction in code! It is now much easier for me (or anyone else) to read and understand how the system works.</p>
+</blockquote>
+
+<h2 id="2-using-aws-ssm-for-smart-settings">2. Using AWS SSM for Smart Settings</h2>
+
+<p>In the past, if I wanted to add a new school department to the scraper, I had to rewrite the code and upload it again.<br />
+Now, I use <code class="language-plaintext highlighter-rouge">AWS Systems Manager (SSM)</code>.<br />
+This acts like a “Remote Control.” I can just change a setting in the AWS dashboard, and the scraper updates itself automatically.<br />
+I don’t need to touch the code at all.</p>
+
+<h2 id="3-technical-details">3. Technical Details</h2>
+
+<p>Furthermore, I used three main engineering tricks to make the service truly professional.</p>
+
+<h3 id="go-errgroup">Go <code class="language-plaintext highlighter-rouge">errgroup</code></h3>
+
+<p>Checking websites one by one is very boring and slow.<br />
+If you have 10 websites and each takes 3 seconds, that is 30 seconds total.<br />
+I used Go’s errgroup to check all websites at the same time (in parallel).</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">// Checking many websites at once</span>
+<span class="n">g</span><span class="p">,</span> <span class="n">gCtx</span> <span class="o">:=</span> <span class="n">errgroup</span><span class="o">.</span><span class="n">WithContext</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">url</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">cfg</span><span class="o">.</span><span class="n">Urls</span> <span class="p">{</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">Go</span><span class="p">(</span><span class="k">func</span><span class="p">()</span> <span class="kt">error</span> <span class="p">{</span>
+        <span class="c">// Fetch news from the API concurrently</span>
+        <span class="n">apiResponse</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">ssufid_request</span><span class="o">.</span><span class="n">SSUFIDRequest</span><span class="p">(</span><span class="n">gCtx</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="k">return</span> <span class="no">nil</span>
+    <span class="p">})</span>
+<span class="p">}</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">g</span><span class="o">.</span><span class="n">Wait</span><span class="p">();</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"Something went wrong during the task: %v"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Because of this “parallel” work, the entire task now takes only less than 3 seconds total (5 API requests), no matter how many websites we add.</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site1
+2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site2
+2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site3
+2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site4
+2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site5
+2025/12/30 12:53:48 [DEBUG] Deserialize API response body
+2025/12/30 12:53:48 [DEBUG] Deserialize API response body
+2025/12/30 12:53:48 [DEBUG] Deserialize API response body
+2025/12/30 12:53:48 [DEBUG] Deserialize API response body
+2025/12/30 12:53:48 [DEBUG] Deserialize API response body
+2025/12/30 12:53:49 [DEBUG] Successfully deserialized API response body
+2025/12/30 12:53:49 [DEBUG] Successfully deserialized API response body
+2025/12/30 12:53:49 [DEBUG] Successfully deserialized API response body
+2025/12/30 12:53:49 [DEBUG] Successfully deserialized API response body
+2025/12/30 12:53:50 [DEBUG] Successfully deserialized API response body
+</code></pre></div></div>
+
+<h3 id="fast-search-with-dynamodb-gsi">Fast search with DynamoDB GSI</h3>
+
+<p>We never want to send the same news alert to students twice.<br />
+To prevent this, I added a “Fast Index” called a GSI (Global Secondary Index) to my database.</p>
+
+<p>Instead of looking through thousands of old news items one by one (which is very slow),<br />
+the code uses the index to quickly ask: “Give me the 100 newest items for this department.”<br />
+This “indexed search” is incredibly fast and keeps our database costs very low.</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">// Fast search using an Index instead of a slow scan</span>
+<span class="n">input</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">QueryInput</span><span class="p">{</span>
+    <span class="n">TableName</span><span class="o">:</span>              <span class="o">&amp;</span><span class="n">cfg</span><span class="o">.</span><span class="n">DatabaseName</span><span class="p">,</span>
+    <span class="n">IndexName</span><span class="o">:</span>              <span class="n">aws</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="s">"TypeSubTypeCreatedAtIndex"</span><span class="p">),</span>
+    <span class="n">KeyConditionExpression</span><span class="o">:</span> <span class="n">expr</span><span class="o">.</span><span class="n">KeyCondition</span><span class="p">(),</span>
+    <span class="n">ScanIndexForward</span><span class="o">:</span>       <span class="n">aws</span><span class="o">.</span><span class="n">Bool</span><span class="p">(</span><span class="no">false</span><span class="p">),</span> <span class="c">// Get newest items first</span>
+    <span class="n">Limit</span><span class="o">:</span>                  <span class="n">aws</span><span class="o">.</span><span class="n">Int32</span><span class="p">(</span><span class="m">100</span><span class="p">),</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<blockquote>
+  <p>Reference: https://docs.aws.amazon.com/ko_kr/code-library/latest/ug/go_2_dynamodb_code_examples.html</p>
+</blockquote>
+
+<h3 id="testing-mocks-and-integration-tests">Testing: Mocks and Integration Tests</h3>
+
+<p>To make sure the code never breaks, I implemented two levels of testing</p>
+
+<h4 id="1-unit-tests">1. Unit tests</h4>
+
+<blockquote>
+  <p>I created “fake” versions of the database.<br />
+This lets me check the logic of my code on my laptop without needing the internet.</p>
+</blockquote>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">//go:build unit</span>
+<span class="c">// MockDynamoDBClient is a mock implementation of config.DynamoDBClient interface</span>
+<span class="k">type</span> <span class="n">MockDynamoDBClient</span> <span class="k">struct</span> <span class="p">{</span>
+	<span class="n">BatchWriteItemFunc</span> <span class="k">func</span><span class="p">(</span><span class="n">ctx</span> <span class="n">context</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">params</span> <span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">BatchWriteItemInput</span><span class="p">,</span> <span class="n">optFns</span> <span class="o">...</span><span class="k">func</span><span class="p">(</span><span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">Options</span><span class="p">))</span> <span class="p">(</span><span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">BatchWriteItemOutput</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
+	<span class="n">BatchGetItemFunc</span>   <span class="k">func</span><span class="p">(</span><span class="n">ctx</span> <span class="n">context</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">params</span> <span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">BatchGetItemInput</span><span class="p">,</span> <span class="n">optFns</span> <span class="o">...</span><span class="k">func</span><span class="p">(</span><span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">Options</span><span class="p">))</span> <span class="p">(</span><span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">BatchGetItemOutput</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
+	<span class="n">QueryFunc</span>          <span class="k">func</span><span class="p">(</span><span class="n">ctx</span> <span class="n">context</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">params</span> <span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">QueryInput</span><span class="p">,</span> <span class="n">optFns</span> <span class="o">...</span><span class="k">func</span><span class="p">(</span><span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">Options</span><span class="p">))</span> <span class="p">(</span><span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">QueryOutput</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c">// BatchWriteItem implements the DynamoDBClient interface</span>
+<span class="k">func</span> <span class="p">(</span><span class="n">m</span> <span class="o">*</span><span class="n">MockDynamoDBClient</span><span class="p">)</span> <span class="n">BatchWriteItem</span><span class="p">(</span><span class="n">ctx</span> <span class="n">context</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">params</span> <span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">BatchWriteItemInput</span><span class="p">,</span> <span class="n">optFns</span> <span class="o">...</span><span class="k">func</span><span class="p">(</span><span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">Options</span><span class="p">))</span> <span class="p">(</span><span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">BatchWriteItemOutput</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c">// Mock Logic</span>
+<span class="p">}</span>
+
+<span class="c">// BatchGetItem implements the DynamoDBClient interface</span>
+<span class="k">func</span> <span class="p">(</span><span class="n">m</span> <span class="o">*</span><span class="n">MockDynamoDBClient</span><span class="p">)</span> <span class="n">BatchGetItem</span><span class="p">(</span><span class="n">ctx</span> <span class="n">context</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">params</span> <span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">BatchGetItemInput</span><span class="p">,</span> <span class="n">optFns</span> <span class="o">...</span><span class="k">func</span><span class="p">(</span><span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">Options</span><span class="p">))</span> <span class="p">(</span><span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">BatchGetItemOutput</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c">// Mock Logic</span>
+<span class="p">}</span>
+
+<span class="c">// Query implements the DynamoDBClient interface</span>
+<span class="k">func</span> <span class="p">(</span><span class="n">m</span> <span class="o">*</span><span class="n">MockDynamoDBClient</span><span class="p">)</span> <span class="n">Query</span><span class="p">(</span><span class="n">ctx</span> <span class="n">context</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">params</span> <span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">QueryInput</span><span class="p">,</span> <span class="n">optFns</span> <span class="o">...</span><span class="k">func</span><span class="p">(</span><span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">Options</span><span class="p">))</span> <span class="p">(</span><span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">QueryOutput</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c">// Mock Logic</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">TestBatchSaveAnnouncements</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">t</span><span class="o">.</span><span class="n">Parallel</span><span class="p">()</span>
+	<span class="n">testCases</span> <span class="o">:=</span> <span class="p">[]</span><span class="k">struct</span> <span class="p">{</span>
+		<span class="n">name</span>                <span class="kt">string</span>
+		<span class="n">mockDynamoClient</span>    <span class="o">*</span><span class="n">MockDynamoDBClient</span>
+		<span class="n">announcements</span>       <span class="p">[]</span><span class="n">dto</span><span class="o">.</span><span class="n">ScrapeItem</span>
+		<span class="n">announcementSubType</span> <span class="kt">string</span>
+		<span class="n">expectedError</span>       <span class="kt">bool</span>
+		<span class="n">validator</span>           <span class="k">func</span><span class="p">(</span><span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
+	<span class="p">}{</span>
+		<span class="c">// Test case 1</span>
+		<span class="p">{</span>
+			<span class="n">name</span><span class="o">:</span> <span class="s">"Successfully add announcement batch into database"</span><span class="p">,</span>
+			<span class="n">mockDynamoClient</span><span class="o">:</span> <span class="o">&amp;</span><span class="n">MockDynamoDBClient</span><span class="p">{</span>
+				<span class="n">BatchWriteItemFunc</span><span class="o">:</span> <span class="k">func</span><span class="p">(</span><span class="n">ctx</span> <span class="n">context</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">params</span> <span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">BatchWriteItemInput</span><span class="p">,</span> <span class="n">optFns</span> <span class="o">...</span><span class="k">func</span><span class="p">(</span><span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">Options</span><span class="p">))</span> <span class="p">(</span><span class="o">*</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">BatchWriteItemOutput</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+					<span class="k">return</span> <span class="o">&amp;</span><span class="n">dynamodb</span><span class="o">.</span><span class="n">BatchWriteItemOutput</span><span class="p">{},</span> <span class="no">nil</span>
+				<span class="p">},</span>
+			<span class="p">},</span>
+			<span class="n">announcements</span><span class="o">:</span> <span class="n">createMockAnnouncements</span><span class="p">(</span><span class="m">2</span><span class="p">),</span>
+			<span class="n">expectedError</span><span class="o">:</span> <span class="no">false</span><span class="p">,</span>
+			<span class="n">validator</span><span class="o">:</span> <span class="k">func</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+				<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+					<span class="n">t</span><span class="o">.</span><span class="n">Errorf</span><span class="p">(</span><span class="s">"Unexpected error: %v"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+				<span class="p">}</span>
+			<span class="p">},</span>
+		<span class="p">},</span>
+
+		<span class="c">// Test case 2</span>
+		<span class="p">{</span>
+			<span class="o">...</span>
+		<span class="p">},</span>
+
+		<span class="c">// Test case 3</span>
+		<span class="p">{</span>
+			<span class="o">...</span>
+		<span class="p">},</span>
+
+		<span class="c">// Test case 4</span>
+		<span class="p">{</span>
+			<span class="o">...</span>
+		<span class="p">},</span>
+	<span class="p">}</span>
+
+	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">testCase</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">testCases</span> <span class="p">{</span>
+		<span class="n">t</span><span class="o">.</span><span class="n">Run</span><span class="p">(</span><span class="n">testCase</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+			<span class="c">// Run and validate test cases</span>
+		<span class="p">})</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c">// createMockAnnouncements is a helper function that generates mock announcements</span>
+<span class="k">func</span> <span class="n">createMockAnnouncements</span><span class="p">(</span><span class="n">count</span> <span class="kt">int</span><span class="p">)</span> <span class="p">[]</span><span class="n">dto</span><span class="o">.</span><span class="n">ScrapeItem</span> <span class="p">{</span>
+	<span class="n">items</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="n">dto</span><span class="o">.</span><span class="n">ScrapeItem</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span>
+	<span class="o">...</span>
+	<span class="k">return</span> <span class="n">items</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="2-integration-tests">2. Integration Tests</h4>
+
+<blockquote>
+  <p>This is the cool part. 
+I used LocalStack and Testcontainers to run a “Fake AWS” inside a Docker container</p>
+</blockquote>
+
+<p>This allows me to test if the code can actually talk to AWS SSM and DynamoDB correctly.<br />
+For example, my test starts a real container, sets up fake parameters, and checks if the code can read them</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">TestLoadConfig_Integration</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">ctx</span> <span class="o">:=</span> <span class="n">context</span><span class="o">.</span><span class="n">Background</span><span class="p">()</span>
+    <span class="c">// Start a real LocalStack container to act like AWS</span>
+    <span class="n">container</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">utils</span><span class="o">.</span><span class="n">GetTestContainer</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+       <span class="n">t</span><span class="o">.</span><span class="n">Fatalf</span><span class="p">(</span><span class="s">"Failed to get test container: %v"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">defer</span> <span class="n">container</span><span class="o">.</span><span class="n">Terminate</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+
+    <span class="c">// ... set up fake SSM parameters and check if our code loads them correctly</span>
+    <span class="n">appConfig</span> <span class="o">:=</span> <span class="n">LoadConfig</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">appConfig</span><span class="o">.</span><span class="n">DatabaseName</span> <span class="o">!=</span> <span class="s">"test-database"</span> <span class="p">{</span>
+       <span class="n">t</span><span class="o">.</span><span class="n">Errorf</span><span class="p">(</span><span class="s">"Expected 'test-database', but got '%s'"</span><span class="p">,</span> <span class="n">appConfig</span><span class="o">.</span><span class="n">DatabaseName</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h1 id="results">Results</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Metric</th>
+      <th>Old Way (Scraping)</th>
+      <th>New Way (API)</th>
+      <th>Improvement</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Time to Finish</td>
+      <td>44 seconds</td>
+      <td>3 seconds</td>
+      <td>93% Faster</td>
+    </tr>
+    <tr>
+      <td>Lines of Code</td>
+      <td>735 lines</td>
+      <td>208 lines</td>
+      <td>71% Simpler</td>
+    </tr>
+    <tr>
+      <td>Reliability</td>
+      <td>No Tests</td>
+      <td>Implemented unit/integration tests</td>
+      <td>38% Safer</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="scraper-execution-time">Scraper execution time</h2>
+
+<h3 id="original">Original</h3>
+
+<p><img width="1137" height="408" alt="image" src="https://github.com/user-attachments/assets/106ec7ac-b64c-402d-b579-7bf9bcae76b4" /></p>
+
+<h3 id="new">New</h3>
+
+<p><img width="1438" height="457" alt="image" src="https://github.com/user-attachments/assets/8e4dcf59-15d9-4ac8-a98a-c6a4c1bdf3ae" /></p>
+
+<h2 id="test-coverage">Test coverage</h2>
+
+<h3 id="original-1">Original</h3>
+
+<p><code class="language-plaintext highlighter-rouge">0%</code> (No test cases at all)</p>
+
+<h3 id="new-1">New</h3>
+
+<blockquote>
+  <p>It still needs more test cases to improve the current test coverage!</p>
+</blockquote>
+
+<p><img width="887" height="164" alt="image" src="https://github.com/user-attachments/assets/625fd046-d6e0-4b78-bbb2-11129838be54" /></p>]]></content><author><name></name></author><category term="ITSupport" /><category term="Backend" /><summary type="html"><![CDATA[Overview In December 2025, I fixed a big problem with my project: the SSU Announcement Scraper. This tool checks school news and sends alerts to students. For a long time, the old version was slow, expensive, and broke very easily. To solve this, I performed a major “clean-up.” I deleted 700 lines of old code and made the system much faster and more reliable. Here is a detailed look at how I transformed a “fragile” prototype into a strong service. Problems The old version used a “Headless Chrome” browser inside AWS Lambda to visit the school portal. While this worked at first, it was a bad way to build a long-term service because… 1.It was too heavy Running a whole browser just to read a few lines of text uses a massive amount of memory. It is like using a big heavy truck to deliver a single small letter. Every time the scraper ran, the system had to “start the engine” (Chrome), which wasted resources. 2. It was slow and expensive Because it had to load images, scripts, and styles, it took 30 to 60 seconds to finish. In the cloud world (AWS), time is money. Long execution times meant higher monthly bills. 3. It broke easily (Maintenance problem) If the school changed just one small thing on their website—like a button color or a table name—the scraper would stop working. I had to spend hours every week fixing the code manually just to keep it running. 4. No safety net (No tests) I didn’t have any automated tests to check if the code was working. This meant I only found out about bugs after the service stopped sending news to students. Solutions The biggest change was stopping the “web scraping” entirely. Instead of looking at the website like a human, I found a way to talk to a server directly using an API called SSUFID. 1. Cleaning and Organizing the Code I deleted the messy old code and wrote a new, unified system. Old code: 700+ lines of messy logic and complicated HTML rules. New code: Only 200 lines of clean, simple code. Result: A 72% reduction in code! It is now much easier for me (or anyone else) to read and understand how the system works. 2. Using AWS SSM for Smart Settings In the past, if I wanted to add a new school department to the scraper, I had to rewrite the code and upload it again. Now, I use AWS Systems Manager (SSM). This acts like a “Remote Control.” I can just change a setting in the AWS dashboard, and the scraper updates itself automatically. I don’t need to touch the code at all. 3. Technical Details Furthermore, I used three main engineering tricks to make the service truly professional. Go errgroup Checking websites one by one is very boring and slow. If you have 10 websites and each takes 3 seconds, that is 30 seconds total. I used Go’s errgroup to check all websites at the same time (in parallel). // Checking many websites at once g, gCtx := errgroup.WithContext(ctx) for _, url := range cfg.Urls { g.Go(func() error { // Fetch news from the API concurrently apiResponse, err := ssufid_request.SSUFIDRequest(gCtx, url) return nil }) } if err := g.Wait(); err != nil { log.Printf("Something went wrong during the task: %v", err) } Because of this “parallel” work, the entire task now takes only less than 3 seconds total (5 API requests), no matter how many websites we add. 2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site1 2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site2 2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site3 2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site4 2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site5 2025/12/30 12:53:48 [DEBUG] Deserialize API response body 2025/12/30 12:53:48 [DEBUG] Deserialize API response body 2025/12/30 12:53:48 [DEBUG] Deserialize API response body 2025/12/30 12:53:48 [DEBUG] Deserialize API response body 2025/12/30 12:53:48 [DEBUG] Deserialize API response body 2025/12/30 12:53:49 [DEBUG] Successfully deserialized API response body 2025/12/30 12:53:49 [DEBUG] Successfully deserialized API response body 2025/12/30 12:53:49 [DEBUG] Successfully deserialized API response body 2025/12/30 12:53:49 [DEBUG] Successfully deserialized API response body 2025/12/30 12:53:50 [DEBUG] Successfully deserialized API response body Fast search with DynamoDB GSI We never want to send the same news alert to students twice. To prevent this, I added a “Fast Index” called a GSI (Global Secondary Index) to my database. Instead of looking through thousands of old news items one by one (which is very slow), the code uses the index to quickly ask: “Give me the 100 newest items for this department.” This “indexed search” is incredibly fast and keeps our database costs very low. // Fast search using an Index instead of a slow scan input := &amp;dynamodb.QueryInput{ TableName: &amp;cfg.DatabaseName, IndexName: aws.String("TypeSubTypeCreatedAtIndex"), KeyConditionExpression: expr.KeyCondition(), ScanIndexForward: aws.Bool(false), // Get newest items first Limit: aws.Int32(100), } Reference: https://docs.aws.amazon.com/ko_kr/code-library/latest/ug/go_2_dynamodb_code_examples.html Testing: Mocks and Integration Tests To make sure the code never breaks, I implemented two levels of testing 1. Unit tests I created “fake” versions of the database. This lets me check the logic of my code on my laptop without needing the internet. //go:build unit // MockDynamoDBClient is a mock implementation of config.DynamoDBClient interface type MockDynamoDBClient struct { BatchWriteItemFunc func(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) BatchGetItemFunc func(ctx context.Context, params *dynamodb.BatchGetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchGetItemOutput, error) QueryFunc func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) } // BatchWriteItem implements the DynamoDBClient interface func (m *MockDynamoDBClient) BatchWriteItem(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) { // Mock Logic } // BatchGetItem implements the DynamoDBClient interface func (m *MockDynamoDBClient) BatchGetItem(ctx context.Context, params *dynamodb.BatchGetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchGetItemOutput, error) { // Mock Logic } // Query implements the DynamoDBClient interface func (m *MockDynamoDBClient) Query(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) { // Mock Logic } func TestBatchSaveAnnouncements(t *testing.T) { t.Parallel() testCases := []struct { name string mockDynamoClient *MockDynamoDBClient announcements []dto.ScrapeItem announcementSubType string expectedError bool validator func(*testing.T, error) }{ // Test case 1 { name: "Successfully add announcement batch into database", mockDynamoClient: &amp;MockDynamoDBClient{ BatchWriteItemFunc: func(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) { return &amp;dynamodb.BatchWriteItemOutput{}, nil }, }, announcements: createMockAnnouncements(2), expectedError: false, validator: func(t *testing.T, err error) { if err != nil { t.Errorf("Unexpected error: %v", err) } }, }, // Test case 2 { ... }, // Test case 3 { ... }, // Test case 4 { ... }, } for _, testCase := range testCases { t.Run(testCase.name, func(t *testing.T) { // Run and validate test cases }) } } // createMockAnnouncements is a helper function that generates mock announcements func createMockAnnouncements(count int) []dto.ScrapeItem { items := make([]dto.ScrapeItem, count) ... return items } 2. Integration Tests This is the cool part. I used LocalStack and Testcontainers to run a “Fake AWS” inside a Docker container This allows me to test if the code can actually talk to AWS SSM and DynamoDB correctly. For example, my test starts a real container, sets up fake parameters, and checks if the code can read them func TestLoadConfig_Integration(t *testing.T) { ctx := context.Background() // Start a real LocalStack container to act like AWS container, err := utils.GetTestContainer(ctx) if err != nil { t.Fatalf("Failed to get test container: %v", err) } defer container.Terminate(ctx) // ... set up fake SSM parameters and check if our code loads them correctly appConfig := LoadConfig(ctx) if appConfig.DatabaseName != "test-database" { t.Errorf("Expected 'test-database', but got '%s'", appConfig.DatabaseName) } } Results Metric Old Way (Scraping) New Way (API) Improvement Time to Finish 44 seconds 3 seconds 93% Faster Lines of Code 735 lines 208 lines 71% Simpler Reliability No Tests Implemented unit/integration tests 38% Safer Scraper execution time Original New Test coverage Original 0% (No test cases at all) New It still needs more test cases to improve the current test coverage!]]></summary></entry><entry><title type="html">Customize the Favicon</title><link href="http://localhost:4000/posts/customize-the-favicon/" rel="alternate" type="text/html" title="Customize the Favicon" /><published>2019-08-11T01:34:00+09:00</published><updated>2019-08-11T01:34:00+09:00</updated><id>http://localhost:4000/posts/customize-the-favicon</id><content type="html" xml:base="http://localhost:4000/posts/customize-the-favicon/"><![CDATA[<p>The <a href="https://www.favicon-generator.org/about/">favicons</a> of <a href="https://github.com/cotes2020/jekyll-theme-chirpy/"><strong>Chirpy</strong></a> are placed in the directory <code class="language-plaintext filepath highlighter-rouge">assets/img/favicons/</code>. You may want to replace them with your own. The following sections will guide you to create and replace the default favicons.</p>
+
+<h2 id="generate-the-favicon">Generate the favicon</h2>
+
+<p>Prepare a square image (PNG, JPG, or SVG) with a size of 512x512 or more, and then go to the online tool <a href="https://realfavicongenerator.net/"><strong>Real Favicon Generator</strong></a> and click the button <kbd>Pick your favicon image</kbd> to upload your image file.</p>
+
+<p>In the next step, the webpage will show all usage scenarios. You can keep the default options, scroll to the bottom of the page, and click the button <kbd>Next →</kbd> to generate the favicon.</p>
+
+<h2 id="download--replace">Download &amp; Replace</h2>
+
+<p>Download the generated package, unzip and delete the following file(s) from the extracted files:</p>
+
+<ul>
+  <li><code class="language-plaintext filepath highlighter-rouge">site.webmanifest</code></li>
+</ul>
+
+<p>And then copy the remaining image files (<code class="language-plaintext filepath highlighter-rouge">.PNG</code>, <code class="language-plaintext filepath highlighter-rouge">.ICO</code> and <code class="language-plaintext filepath highlighter-rouge">.SVG</code>) to cover the original files in the directory <code class="language-plaintext filepath highlighter-rouge">assets/img/favicons/</code> of your Jekyll site. If your Jekyll site doesn’t have this directory yet, just create one.</p>
+
+<p>The following table will help you understand the changes to the favicon files:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>File(s)</th>
+      <th style="text-align: center">From Online Tool</th>
+      <th style="text-align: center">From Chirpy</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">*.PNG</code></td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">✗</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">*.ICO</code></td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">✗</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">*.SVG</code></td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">✗</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-disable-next-line -->
+<blockquote class="prompt-info">
+  <p>✓ means keep, ✗ means delete.</p>
+</blockquote>
+
+<p>The next time you build the site, the favicon will be replaced with a customized edition.</p>]]></content><author><name>cotes</name></author><category term="tmp" /><category term="jekyll-remote-theme-20260102-322802-5jruyj" /><category term="Blogging" /><category term="Tutorial" /><category term="favicon" /><summary type="html"><![CDATA[The favicons of Chirpy are placed in the directory assets/img/favicons/. You may want to replace them with your own. The following sections will guide you to create and replace the default favicons.]]></summary></entry><entry><title type="html">Getting Started</title><link href="http://localhost:4000/posts/getting-started/" rel="alternate" type="text/html" title="Getting Started" /><published>2019-08-09T21:55:00+09:00</published><updated>2019-08-09T21:55:00+09:00</updated><id>http://localhost:4000/posts/getting-started</id><content type="html" xml:base="http://localhost:4000/posts/getting-started/"><![CDATA[<h2 id="creating-a-site-repository">Creating a Site Repository</h2>
+
+<p>When creating your site repository, you have two options depending on your needs:</p>
+
+<h3 id="option-1-using-the-starter-recommended">Option 1. Using the Starter (Recommended)</h3>
+
+<p>This approach simplifies upgrades, isolates unnecessary files, and is perfect for users who want to focus on writing with minimal configuration.</p>
+
+<ol>
+  <li>Sign in to GitHub and navigate to the <a href="https://github.com/cotes2020/chirpy-starter"><strong>starter</strong></a>.</li>
+  <li>Click the <kbd>Use this template</kbd> button and then select <kbd>Create a new repository</kbd>.</li>
+  <li>Name the new repository <code class="language-plaintext highlighter-rouge">&lt;username&gt;.github.io</code>, replacing <code class="language-plaintext highlighter-rouge">username</code> with your lowercase GitHub username.</li>
+</ol>
+
+<h3 id="option-2-forking-the-theme">Option 2. Forking the Theme</h3>
+
+<p>This approach is convenient for modifying features or UI design, but presents challenges during upgrades. So don’t try this unless you are familiar with Jekyll and plan to heavily modify this theme.</p>
+
+<ol>
+  <li>Sign in to GitHub.</li>
+  <li><a href="https://github.com/cotes2020/jekyll-theme-chirpy/fork">Fork the theme repository</a>.</li>
+  <li>Name the new repository <code class="language-plaintext highlighter-rouge">&lt;username&gt;.github.io</code>, replacing <code class="language-plaintext highlighter-rouge">username</code> with your lowercase GitHub username.</li>
+</ol>
+
+<h2 id="setting-up-the-environment">Setting up the Environment</h2>
+
+<p>Once your repository is created, it’s time to set up your development environment. There are two primary methods:</p>
+
+<h3 id="using-dev-containers-recommended-for-windows">Using Dev Containers (Recommended for Windows)</h3>
+
+<p>Dev Containers offer an isolated environment using Docker, which prevents conflicts with your system and ensures all dependencies are managed within the container.</p>
+
+<p><strong>Steps</strong>:</p>
+
+<ol>
+  <li>Install Docker:
+    <ul>
+      <li>On Windows/macOS, install <a href="https://www.docker.com/products/docker-desktop/">Docker Desktop</a>.</li>
+      <li>On Linux, install <a href="https://docs.docker.com/engine/install/">Docker Engine</a>.</li>
+    </ul>
+  </li>
+  <li>Install <a href="https://code.visualstudio.com/">VS Code</a> and the <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers">Dev Containers extension</a>.</li>
+  <li>Clone your repository:
+    <ul>
+      <li>For Docker Desktop: Start VS Code and <a href="https://code.visualstudio.com/docs/devcontainers/containers#_quick-start-open-a-git-repository-or-github-pr-in-an-isolated-container-volume">clone your repo in a container volume</a>.</li>
+      <li>For Docker Engine: Clone your repo locally, then <a href="https://code.visualstudio.com/docs/devcontainers/containers#_quick-start-open-an-existing-folder-in-a-container">open it in a container</a> via VS Code.</li>
+    </ul>
+  </li>
+  <li>Wait for the Dev Containers setup to complete.</li>
+</ol>
+
+<h3 id="setting-up-natively-recommended-for-unix-like-os">Setting up Natively (Recommended for Unix-like OS)</h3>
+
+<p>For Unix-like systems, you can set up the environment natively for optimal performance, though you can also use Dev Containers as an alternative.</p>
+
+<p><strong>Steps</strong>:</p>
+
+<ol>
+  <li>Follow the <a href="https://jekyllrb.com/docs/installation/">Jekyll installation guide</a> to install Jekyll and ensure <a href="https://git-scm.com/">Git</a> is installed.</li>
+  <li>Clone your repository to your local machine.</li>
+  <li>If you forked the theme, install <a href="https://nodejs.org/">Node.js</a> and run <code class="language-plaintext highlighter-rouge">bash tools/init.sh</code> in the root directory to initialize the repository.</li>
+  <li>Run command <code class="language-plaintext highlighter-rouge">bundle</code> in the root of your repository to install the dependencies.</li>
+</ol>
+
+<h2 id="usage">Usage</h2>
+
+<h3 id="start-the-jekyll-server">Start the Jekyll Server</h3>
+
+<p>To run the site locally, use the following command:</p>
+
+<div class="language-terminal highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>bundle <span class="nb">exec </span>jekyll serve
+</code></pre></div></div>
+
+<blockquote class="prompt-info">
+  <p>If you are using Dev Containers, you must run that command in the <strong>VS Code</strong> Terminal.</p>
+</blockquote>
+
+<p>After a few seconds, the local server will be available at <a href="http://127.0.0.1:4000">http://127.0.0.1:4000</a>.</p>
+
+<h3 id="configuration">Configuration</h3>
+
+<p>Update the variables in <code class="language-plaintext filepath highlighter-rouge">_config.yml</code> as needed. Some typical options include:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">url</code></li>
+  <li><code class="language-plaintext highlighter-rouge">avatar</code></li>
+  <li><code class="language-plaintext highlighter-rouge">timezone</code></li>
+  <li><code class="language-plaintext highlighter-rouge">lang</code></li>
+</ul>
+
+<h3 id="social-contact-options">Social Contact Options</h3>
+
+<p>Social contact options are displayed at the bottom of the sidebar. You can enable or disable specific contacts in the <code class="language-plaintext filepath highlighter-rouge">_data/contact.yml</code> file.</p>
+
+<h3 id="customizing-the-stylesheet">Customizing the Stylesheet</h3>
+
+<p>To customize the stylesheet, copy the theme’s <code class="language-plaintext filepath highlighter-rouge">assets/css/jekyll-theme-chirpy.scss</code> file to the same path in your Jekyll site, and add your custom styles at the end of the file.</p>
+
+<h3 id="customizing-static-assets">Customizing Static Assets</h3>
+
+<p>Static assets configuration was introduced in version <code class="language-plaintext highlighter-rouge">5.1.0</code>. The CDN of the static assets is defined in <code class="language-plaintext filepath highlighter-rouge">_data/origin/cors.yml</code>. You can replace some of them based on the network conditions in the region where your website is published.</p>
+
+<p>If you prefer to self-host the static assets, refer to the <a href="https://github.com/cotes2020/chirpy-static-assets#readme"><em>chirpy-static-assets</em></a> repository.</p>
+
+<h2 id="deployment">Deployment</h2>
+
+<p>Before deploying, check the <code class="language-plaintext filepath highlighter-rouge">_config.yml</code> file and ensure the <code class="language-plaintext highlighter-rouge">url</code> is configured correctly. If you prefer a <a href="https://help.github.com/en/github/working-with-github-pages/about-github-pages#types-of-github-pages-sites"><strong>project site</strong></a> and don’t use a custom domain, or if you want to visit your website with a base URL on a web server other than <strong>GitHub Pages</strong>, remember to set the <code class="language-plaintext highlighter-rouge">baseurl</code> to your project name, starting with a slash, e.g., <code class="language-plaintext highlighter-rouge">/project-name</code>.</p>
+
+<p>Now you can choose <em>ONE</em> of the following methods to deploy your Jekyll site.</p>
+
+<h3 id="deploy-using-github-actions">Deploy Using Github Actions</h3>
+
+<p>Prepare the following:</p>
+
+<ul>
+  <li>If you’re on the GitHub Free plan, keep your site repository public.</li>
+  <li>
+    <p>If you have committed <code class="language-plaintext filepath highlighter-rouge">Gemfile.lock</code> to the repository, and your local machine is not running Linux, update the platform list of the lock file:</p>
+
+    <div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>bundle lock <span class="nt">--add-platform</span> x86_64-linux
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<p>Next, configure the <em>Pages</em> service:</p>
+
+<ol>
+  <li>
+    <p>Go to your repository on GitHub. Select the <em>Settings</em> tab, then click <em>Pages</em> in the left navigation bar. In the <strong>Source</strong> section (under <em>Build and deployment</em>), select <a href="https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site#publishing-with-a-custom-github-actions-workflow"><strong>GitHub Actions</strong></a> from the dropdown menu.<br />
+<img src="pages-source-light.png" alt="Build source" class="light border normal" w="375" h="140" />
+<img src="pages-source-dark.png" alt="Build source" class="dark normal" w="375" h="140" /></p>
+  </li>
+  <li>
+    <p>Push any commits to GitHub to trigger the <em>Actions</em> workflow. In the <em>Actions</em> tab of your repository, you should see the workflow <em>Build and Deploy</em> running. Once the build is complete and successful, the site will be deployed automatically.</p>
+  </li>
+</ol>
+
+<p>You can now visit the URL provided by GitHub to access your site.</p>
+
+<h3 id="manual-build-and-deployment">Manual Build and Deployment</h3>
+
+<p>For self-hosted servers, you will need to build the site on your local machine and then upload the site files to the server.</p>
+
+<p>Navigate to the root of the source project, and build your site with the following command:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">$</span><span class="w"> </span><span class="nv">JEKYLL_ENV</span><span class="o">=</span>production bundle <span class="nb">exec </span>jekyll b
+</code></pre></div></div>
+
+<p>Unless you specified the output path, the generated site files will be placed in the <code class="language-plaintext filepath highlighter-rouge">_site</code> folder of the project’s root directory. Upload these files to your target server.</p>]]></content><author><name>cotes</name></author><category term="tmp" /><category term="jekyll-remote-theme-20260102-322802-5jruyj" /><category term="Blogging" /><category term="Tutorial" /><category term="getting started" /><summary type="html"><![CDATA[Get started with Chirpy basics in this comprehensive overview. You will learn how to install, configure, and use your first Chirpy-based website, as well as deploy it to a web server.]]></summary></entry><entry><title type="html">Writing a New Post</title><link href="http://localhost:4000/posts/write-a-new-post/" rel="alternate" type="text/html" title="Writing a New Post" /><published>2019-08-08T15:10:00+09:00</published><updated>2019-08-08T15:10:00+09:00</updated><id>http://localhost:4000/posts/write-a-new-post</id><content type="html" xml:base="http://localhost:4000/posts/write-a-new-post/"><![CDATA[<p>This tutorial will guide you how to write a post in the <em>Chirpy</em> template, and it’s worth reading even if you’ve used Jekyll before, as many features require specific variables to be set.</p>
+
+<h2 id="naming-and-path">Naming and Path</h2>
+
+<p>Create a new file named <code class="language-plaintext filepath highlighter-rouge">YYYY-MM-DD-TITLE.EXTENSION</code> and put it in the <code class="language-plaintext filepath highlighter-rouge">_posts</code> of the root directory. Please note that the <code class="language-plaintext filepath highlighter-rouge">EXTENSION</code> must be one of <code class="language-plaintext filepath highlighter-rouge">md</code> and <code class="language-plaintext filepath highlighter-rouge">markdown</code>. If you want to save time of creating files, please consider using the plugin <a href="https://github.com/jekyll/jekyll-compose"><code class="language-plaintext highlighter-rouge">Jekyll-Compose</code></a> to accomplish this.</p>
+
+<h2 id="front-matter">Front Matter</h2>
+
+<p>Basically, you need to fill the <a href="https://jekyllrb.com/docs/front-matter/">Front Matter</a> as below at the top of the post:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="na">title</span><span class="pi">:</span> <span class="s">TITLE</span>
+<span class="na">date</span><span class="pi">:</span> <span class="s">YYYY-MM-DD HH:MM:SS +/-TTTT</span>
+<span class="na">categories</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">TOP_CATEGORY</span><span class="pi">,</span> <span class="nv">SUB_CATEGORY</span><span class="pi">]</span>
+<span class="na">tags</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">TAG</span><span class="pi">]</span>     <span class="c1"># TAG names should always be lowercase</span>
+<span class="nn">---</span>
+</code></pre></div></div>
+
+<blockquote class="prompt-tip">
+  <p>The posts’ <em>layout</em> has been set to <code class="language-plaintext highlighter-rouge">post</code> by default, so there is no need to add the variable <em>layout</em> in the Front Matter block.</p>
+</blockquote>
+
+<h3 id="timezone-of-date">Timezone of Date</h3>
+
+<p>To accurately record the release date of a post, you should not only set up the <code class="language-plaintext highlighter-rouge">timezone</code> of <code class="language-plaintext filepath highlighter-rouge">_config.yml</code> but also provide the post’s timezone in variable <code class="language-plaintext highlighter-rouge">date</code> of its Front Matter block. Format: <code class="language-plaintext highlighter-rouge">+/-TTTT</code>, e.g. <code class="language-plaintext highlighter-rouge">+0800</code>.</p>
+
+<h3 id="categories-and-tags">Categories and Tags</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">categories</code> of each post are designed to contain up to two elements, and the number of elements in <code class="language-plaintext highlighter-rouge">tags</code> can be zero to infinity. For instance:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="na">categories</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">Animal</span><span class="pi">,</span> <span class="nv">Insect</span><span class="pi">]</span>
+<span class="na">tags</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">bee</span><span class="pi">]</span>
+<span class="nn">---</span>
+</code></pre></div></div>
+
+<h3 id="author-information">Author Information</h3>
+
+<p>The author information of the post usually does not need to be filled in the <em>Front Matter</em> , they will be obtained from variables <code class="language-plaintext highlighter-rouge">social.name</code> and the first entry of <code class="language-plaintext highlighter-rouge">social.links</code> of the configuration file by default. But you can also override it as follows:</p>
+
+<p>Adding author information in <code class="language-plaintext highlighter-rouge">_data/authors.yml</code> (If your website doesn’t have this file, don’t hesitate to create one).</p>
+
+<div file="_data/authors.yml" class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">&lt;author_id&gt;</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">&lt;full name&gt;</span>
+  <span class="na">twitter</span><span class="pi">:</span> <span class="s">&lt;twitter_of_author&gt;</span>
+  <span class="na">url</span><span class="pi">:</span> <span class="s">&lt;homepage_of_author&gt;</span>
+</code></pre></div></div>
+
+<p>And then use <code class="language-plaintext highlighter-rouge">author</code> to specify a single entry or <code class="language-plaintext highlighter-rouge">authors</code> to specify multiple entries:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="na">author</span><span class="pi">:</span> <span class="s">&lt;author_id&gt;</span>                     <span class="c1"># for single entry</span>
+<span class="c1"># or</span>
+<span class="na">authors</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">&lt;author1_id&gt;</span><span class="pi">,</span> <span class="nv">&lt;author2_id&gt;</span><span class="pi">]</span>   <span class="c1"># for multiple entries</span>
+<span class="nn">---</span>
+</code></pre></div></div>
+
+<p>Having said that, the key <code class="language-plaintext highlighter-rouge">author</code> can also identify multiple entries.</p>
+
+<blockquote class="prompt-info">
+  <p>The benefit of reading the author information from the file <code class="language-plaintext filepath highlighter-rouge">_data/authors.yml</code> is that the page will have the meta tag <code class="language-plaintext highlighter-rouge">twitter:creator</code>, which enriches the <a href="https://developer.twitter.com/en/docs/twitter-for-websites/cards/guides/getting-started#card-and-content-attribution">Twitter Cards</a> and is good for SEO.</p>
+</blockquote>
+
+<h3 id="post-description">Post Description</h3>
+
+<p>By default, the first words of the post are used to display on the home page for a list of posts, in the <em>Further Reading</em> section, and in the XML of the RSS feed. If you don’t want to display the auto-generated description for the post, you can customize it using the <code class="language-plaintext highlighter-rouge">description</code> field in the <em>Front Matter</em> as follows:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="na">description</span><span class="pi">:</span> <span class="s">Short summary of the post.</span>
+<span class="nn">---</span>
+</code></pre></div></div>
+
+<p>Additionally, the <code class="language-plaintext highlighter-rouge">description</code> text will also be displayed under the post title on the post’s page.</p>
+
+<h2 id="table-of-contents">Table of Contents</h2>
+
+<p>By default, the <strong>T</strong>able <strong>o</strong>f <strong>C</strong>ontents (TOC) is displayed on the right panel of the post. If you want to turn it off globally, go to <code class="language-plaintext filepath highlighter-rouge">_config.yml</code> and set the value of variable <code class="language-plaintext highlighter-rouge">toc</code> to <code class="language-plaintext highlighter-rouge">false</code>. If you want to turn off TOC for a specific post, add the following to the post’s <a href="https://jekyllrb.com/docs/front-matter/">Front Matter</a>:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="na">toc</span><span class="pi">:</span> <span class="kc">false</span>
+<span class="nn">---</span>
+</code></pre></div></div>
+
+<h2 id="comments">Comments</h2>
+
+<p>The global setting for comments is defined by the <code class="language-plaintext highlighter-rouge">comments.provider</code> option in the <code class="language-plaintext filepath highlighter-rouge">_config.yml</code> file. Once a comment system is selected for this variable, comments will be enabled for all posts.</p>
+
+<p>If you want to close the comment for a specific post, add the following to the <strong>Front Matter</strong> of the post:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="na">comments</span><span class="pi">:</span> <span class="kc">false</span>
+<span class="nn">---</span>
+</code></pre></div></div>
+
+<h2 id="media">Media</h2>
+
+<p>We refer to images, audio and video as media resources in <em>Chirpy</em>.</p>
+
+<h3 id="url-prefix">URL Prefix</h3>
+
+<p>From time to time we have to define duplicate URL prefixes for multiple resources in a post, which is a boring task that you can avoid by setting two parameters.</p>
+
+<ul>
+  <li>
+    <p>If you are using a CDN to host media files, you can specify the <code class="language-plaintext highlighter-rouge">cdn</code> in <code class="language-plaintext filepath highlighter-rouge">_config.yml</code>. The URLs of media resources for site avatar and posts are then prefixed with the CDN domain name.</p>
+
+    <div class="language-yaml nolineno highlighter-rouge" file="_config.yml"><div class="highlight"><pre class="highlight"><code><span class="na">cdn</span><span class="pi">:</span> <span class="s">https://cdn.com</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>To specify the resource path prefix for the current post/page range, set <code class="language-plaintext highlighter-rouge">media_subpath</code> in the <em>front matter</em> of the post:</p>
+
+    <div class="language-yaml nolineno highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="na">media_subpath</span><span class="pi">:</span> <span class="s">/path/to/media/</span>
+<span class="nn">---</span>
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<p>The option <code class="language-plaintext highlighter-rouge">site.cdn</code> and <code class="language-plaintext highlighter-rouge">page.media_subpath</code> can be used individually or in combination to flexibly compose the final resource URL: <code class="language-plaintext highlighter-rouge">[site.cdn/][page.media_subpath/]file.ext</code></p>
+
+<h3 id="images">Images</h3>
+
+<h4 id="caption">Caption</h4>
+
+<p>Add italics to the next line of an image, then it will become the caption and appear at the bottom of the image:</p>
+
+<div class="language-markdown nolineno highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">![</span><span class="nv">img-description</span><span class="p">](</span><span class="sx">/path/to/image</span><span class="p">)</span>
+<span class="ge">_Image Caption_</span>
+</code></pre></div></div>
+
+<h4 id="size">Size</h4>
+
+<p>To prevent the page content layout from shifting when the image is loaded, we should set the width and height for each image.</p>
+
+<div class="language-markdown nolineno highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">![</span><span class="nv">Desktop View</span><span class="p">](</span><span class="sx">/assets/img/sample/mockup.png</span><span class="p">)</span>{: width="700" height="400" }
+</code></pre></div></div>
+
+<blockquote class="prompt-info">
+  <p>For an SVG, you have to at least specify its <em>width</em>, otherwise it won’t be rendered.</p>
+</blockquote>
+
+<p>Starting from <em>Chirpy v5.0.0</em>, <code class="language-plaintext highlighter-rouge">height</code> and <code class="language-plaintext highlighter-rouge">width</code> support abbreviations (<code class="language-plaintext highlighter-rouge">height</code> → <code class="language-plaintext highlighter-rouge">h</code>, <code class="language-plaintext highlighter-rouge">width</code> → <code class="language-plaintext highlighter-rouge">w</code>). The following example has the same effect as the above:</p>
+
+<div class="language-markdown nolineno highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">![</span><span class="nv">Desktop View</span><span class="p">](</span><span class="sx">/assets/img/sample/mockup.png</span><span class="p">)</span>{: w="700" h="400" }
+</code></pre></div></div>
+
+<h4 id="position">Position</h4>
+
+<p>By default, the image is centered, but you can specify the position by using one of the classes <code class="language-plaintext highlighter-rouge">normal</code>, <code class="language-plaintext highlighter-rouge">left</code>, and <code class="language-plaintext highlighter-rouge">right</code>.</p>
+
+<blockquote class="prompt-warning">
+  <p>Once the position is specified, the image caption should not be added.</p>
+</blockquote>
+
+<ul>
+  <li>
+    <p><strong>Normal position</strong></p>
+
+    <p>Image will be left aligned in below sample:</p>
+
+    <div class="language-markdown nolineno highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">![</span><span class="nv">Desktop View</span><span class="p">](</span><span class="sx">/assets/img/sample/mockup.png</span><span class="p">)</span>{: .normal }
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p><strong>Float to the left</strong></p>
+
+    <div class="language-markdown nolineno highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">![</span><span class="nv">Desktop View</span><span class="p">](</span><span class="sx">/assets/img/sample/mockup.png</span><span class="p">)</span>{: .left }
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p><strong>Float to the right</strong></p>
+
+    <div class="language-markdown nolineno highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">![</span><span class="nv">Desktop View</span><span class="p">](</span><span class="sx">/assets/img/sample/mockup.png</span><span class="p">)</span>{: .right }
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<h4 id="darklight-mode">Dark/Light mode</h4>
+
+<p>You can make images follow theme preferences in dark/light mode. This requires you to prepare two images, one for dark mode and one for light mode, and then assign them a specific class (<code class="language-plaintext highlighter-rouge">dark</code> or <code class="language-plaintext highlighter-rouge">light</code>):</p>
+
+<div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">![</span><span class="nv">Light mode only</span><span class="p">](</span><span class="sx">/path/to/light-mode.png</span><span class="p">)</span>{: .light }
+<span class="p">![</span><span class="nv">Dark mode only</span><span class="p">](</span><span class="sx">/path/to/dark-mode.png</span><span class="p">)</span>{: .dark }
+</code></pre></div></div>
+
+<h4 id="shadow">Shadow</h4>
+
+<p>The screenshots of the program window can be considered to show the shadow effect:</p>
+
+<div class="language-markdown nolineno highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">![</span><span class="nv">Desktop View</span><span class="p">](</span><span class="sx">/assets/img/sample/mockup.png</span><span class="p">)</span>{: .shadow }
+</code></pre></div></div>
+
+<h4 id="preview-image">Preview Image</h4>
+
+<p>If you want to add an image at the top of the post, please provide an image with a resolution of <code class="language-plaintext highlighter-rouge">1200 x 630</code>. Please note that if the image aspect ratio does not meet <code class="language-plaintext highlighter-rouge">1.91 : 1</code>, the image will be scaled and cropped.</p>
+
+<p>Knowing these prerequisites, you can start setting the image’s attribute:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="na">image</span><span class="pi">:</span>
+  <span class="na">path</span><span class="pi">:</span> <span class="s">/path/to/image</span>
+  <span class="na">alt</span><span class="pi">:</span> <span class="s">image alternative text</span>
+<span class="nn">---</span>
+</code></pre></div></div>
+
+<p>Note that the <a href="#url-prefix"><code class="language-plaintext highlighter-rouge">media_subpath</code></a> can also be passed to the preview image, that is, when it has been set, the attribute <code class="language-plaintext highlighter-rouge">path</code> only needs the image file name.</p>
+
+<p>For simple use, you can also just use <code class="language-plaintext highlighter-rouge">image</code> to define the path.</p>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="na">image</span><span class="pi">:</span> <span class="s">/path/to/image</span>
+<span class="nn">---</span>
+</code></pre></div></div>
+
+<h4 id="lqip">LQIP</h4>
+
+<p>For preview images:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="na">image</span><span class="pi">:</span>
+  <span class="na">lqip</span><span class="pi">:</span> <span class="s">/path/to/lqip-file</span> <span class="c1"># or base64 URI</span>
+<span class="nn">---</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>You can observe LQIP in the preview image of post "<a href="../text-and-typography/">Text and Typography</a>".</p>
+</blockquote>
+
+<p>For normal images:</p>
+
+<div class="language-markdown nolineno highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">![</span><span class="nv">Image description</span><span class="p">](</span><span class="sx">/path/to/image</span><span class="p">)</span>{: lqip="/path/to/lqip-file" }
+</code></pre></div></div>
+
+<h3 id="social-media-platforms">Social Media Platforms</h3>
+
+<p>You can embed video/audio from social media platforms with the following syntax:</p>
+
+<div class="language-liquid highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">{%</span><span class="w"> </span><span class="nt">include</span><span class="w"> </span>embed/{Platform}.html<span class="w"> </span><span class="na">id</span><span class="o">=</span><span class="s1">'{ID}'</span><span class="w"> </span><span class="cp">%}</span>
+</code></pre></div></div>
+
+<p>Where <code class="language-plaintext highlighter-rouge">Platform</code> is the lowercase of the platform name, and <code class="language-plaintext highlighter-rouge">ID</code> is the video ID.</p>
+
+<p>The following table shows how to get the two parameters we need in a given video/audio URL, and you can also know the currently supported video platforms.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Video URL</th>
+      <th>Platform</th>
+      <th style="text-align: left">ID</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="https://www.youtube.com/watch?v=H-B46URT4mg">https://www.<strong>youtube</strong>.com/watch?v=<strong>H-B46URT4mg</strong></a></td>
+      <td><code class="language-plaintext highlighter-rouge">youtube</code></td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">H-B46URT4mg</code></td>
+    </tr>
+    <tr>
+      <td><a href="https://www.twitch.tv/videos/1634779211">https://www.<strong>twitch</strong>.tv/videos/<strong>1634779211</strong></a></td>
+      <td><code class="language-plaintext highlighter-rouge">twitch</code></td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">1634779211</code></td>
+    </tr>
+    <tr>
+      <td><a href="https://www.bilibili.com/video/BV1Q44y1B7Wf">https://www.<strong>bilibili</strong>.com/video/<strong>BV1Q44y1B7Wf</strong></a></td>
+      <td><code class="language-plaintext highlighter-rouge">bilibili</code></td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">BV1Q44y1B7Wf</code></td>
+    </tr>
+    <tr>
+      <td><a href="https://open.spotify.com/track/3OuMIIFP5TxM8tLXMWYPGV">https://www.open.<strong>spotify</strong>.com/track/<strong>3OuMIIFP5TxM8tLXMWYPGV</strong></a></td>
+      <td><code class="language-plaintext highlighter-rouge">spotify</code></td>
+      <td style="text-align: left"><code class="language-plaintext highlighter-rouge">3OuMIIFP5TxM8tLXMWYPGV</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Spotify supports some additional parameters:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">compact</code> - to display compact player instead (ex. <code class="language-plaintext highlighter-rouge">{% include embed/spotify.html id='3OuMIIFP5TxM8tLXMWYPGV' compact=1 %}</code>);</li>
+  <li><code class="language-plaintext highlighter-rouge">dark</code> - to force dark theme (ex. <code class="language-plaintext highlighter-rouge">{% include embed/spotify.html id='3OuMIIFP5TxM8tLXMWYPGV' dark=1 %}</code>).</li>
+</ul>
+
+<h3 id="video-files">Video Files</h3>
+
+<p>If you want to embed a video file directly, use the following syntax:</p>
+
+<div class="language-liquid highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">{%</span><span class="w"> </span><span class="nt">include</span><span class="w"> </span>embed/video.html<span class="w"> </span><span class="na">src</span><span class="o">=</span><span class="s1">'{URL}'</span><span class="w"> </span><span class="cp">%}</span>
+</code></pre></div></div>
+
+<p>Where <code class="language-plaintext highlighter-rouge">URL</code> is a URL to a video file e.g. <code class="language-plaintext highlighter-rouge">/path/to/sample/video.mp4</code>.</p>
+
+<p>You can also specify additional attributes for the embedded video file. Here is a full list of attributes allowed.</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">poster='/path/to/poster.png'</code> — poster image for a video that is shown while video is downloading</li>
+  <li><code class="language-plaintext highlighter-rouge">title='Text'</code> — title for a video that appears below the video and looks same as for images</li>
+  <li><code class="language-plaintext highlighter-rouge">autoplay=true</code> — video automatically begins to play back as soon as it can</li>
+  <li><code class="language-plaintext highlighter-rouge">loop=true</code> — automatically seek back to the start upon reaching the end of the video</li>
+  <li><code class="language-plaintext highlighter-rouge">muted=true</code> — audio will be initially silenced</li>
+  <li><code class="language-plaintext highlighter-rouge">types</code> — specify the extensions of additional video formats separated by <code class="language-plaintext highlighter-rouge">|</code>. Ensure these files exist in the same directory as your primary video file.</li>
+</ul>
+
+<p>Consider an example using all of the above:</p>
+
+<div class="language-liquid highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">{%</span><span class="w">
+  </span><span class="nt">include</span><span class="w"> </span>embed/video.html<span class="w">
+  </span><span class="na">src</span><span class="o">=</span><span class="s1">'/path/to/video.mp4'</span><span class="w">
+  </span><span class="na">types</span><span class="o">=</span><span class="s1">'ogg|mov'</span><span class="w">
+  </span><span class="na">poster</span><span class="o">=</span><span class="s1">'poster.png'</span><span class="w">
+  </span><span class="na">title</span><span class="o">=</span><span class="s1">'Demo video'</span><span class="w">
+  </span><span class="na">autoplay</span><span class="o">=</span><span class="kc">true</span><span class="w">
+  </span><span class="na">loop</span><span class="o">=</span><span class="kc">true</span><span class="w">
+  </span><span class="na">muted</span><span class="o">=</span><span class="kc">true</span><span class="w">
+</span><span class="cp">%}</span>
+</code></pre></div></div>
+
+<h3 id="audio-files">Audio Files</h3>
+
+<p>If you want to embed an audio file directly, use the following syntax:</p>
+
+<div class="language-liquid highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">{%</span><span class="w"> </span><span class="nt">include</span><span class="w"> </span>embed/audio.html<span class="w"> </span><span class="na">src</span><span class="o">=</span><span class="s1">'{URL}'</span><span class="w"> </span><span class="cp">%}</span>
+</code></pre></div></div>
+
+<p>Where <code class="language-plaintext highlighter-rouge">URL</code> is a URL to an audio file e.g. <code class="language-plaintext highlighter-rouge">/path/to/audio.mp3</code>.</p>
+
+<p>You can also specify additional attributes for the embedded audio file. Here is a full list of attributes allowed.</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">title='Text'</code> — title for an audio that appears below the audio and looks same as for images</li>
+  <li><code class="language-plaintext highlighter-rouge">types</code> — specify the extensions of additional audio formats separated by <code class="language-plaintext highlighter-rouge">|</code>. Ensure these files exist in the same directory as your primary audio file.</li>
+</ul>
+
+<p>Consider an example using all of the above:</p>
+
+<div class="language-liquid highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">{%</span><span class="w">
+  </span><span class="nt">include</span><span class="w"> </span>embed/audio.html<span class="w">
+  </span><span class="na">src</span><span class="o">=</span><span class="s1">'/path/to/audio.mp3'</span><span class="w">
+  </span><span class="na">types</span><span class="o">=</span><span class="s1">'ogg|wav|aac'</span><span class="w">
+  </span><span class="na">title</span><span class="o">=</span><span class="s1">'Demo audio'</span><span class="w">
+</span><span class="cp">%}</span>
+</code></pre></div></div>
+
+<h2 id="pinned-posts">Pinned Posts</h2>
+
+<p>You can pin one or more posts to the top of the home page, and the fixed posts are sorted in reverse order according to their release date. Enable by:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="na">pin</span><span class="pi">:</span> <span class="kc">true</span>
+<span class="nn">---</span>
+</code></pre></div></div>
+
+<h2 id="prompts">Prompts</h2>
+
+<p>There are several types of prompts: <code class="language-plaintext highlighter-rouge">tip</code>, <code class="language-plaintext highlighter-rouge">info</code>, <code class="language-plaintext highlighter-rouge">warning</code>, and <code class="language-plaintext highlighter-rouge">danger</code>. They can be generated by adding the class <code class="language-plaintext highlighter-rouge">prompt-{type}</code> to the blockquote. For example, define a prompt of type <code class="language-plaintext highlighter-rouge">info</code> as follows:</p>
+
+<div class="language-md nolineno highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gt">&gt; Example line for prompt.</span>
+{: .prompt-info }
+</code></pre></div></div>
+
+<h2 id="syntax">Syntax</h2>
+
+<h3 id="inline-code">Inline Code</h3>
+
+<div class="language-md nolineno highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="sb">`inline code part`</span>
+</code></pre></div></div>
+
+<h3 id="filepath-highlight">Filepath Highlight</h3>
+
+<div class="language-md nolineno highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="sb">`/path/to/a/file.extend`</span>{: .filepath}
+</code></pre></div></div>
+
+<h3 id="code-block">Code Block</h3>
+
+<p>Markdown symbols <code class="language-plaintext highlighter-rouge">```</code> can easily create a code block as follows:</p>
+
+<div class="language-md highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">```</span><span class="nl">
+</span>This is a plaintext code snippet.
+<span class="p">```</span>
+</code></pre></div></div>
+
+<h4 id="specifying-language">Specifying Language</h4>
+
+<p>Using <code class="language-plaintext highlighter-rouge">```{language}</code> you will get a code block with syntax highlight:</p>
+
+<div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">```</span><span class="nl">yaml
+</span><span class="na">key</span><span class="pi">:</span> <span class="s">value</span>
+<span class="p">```</span>
+</code></pre></div></div>
+
+<blockquote class="prompt-danger">
+  <p>The Jekyll tag <code class="language-plaintext highlighter-rouge">{% highlight %}</code> is not compatible with this theme.</p>
+</blockquote>
+
+<h4 id="line-number">Line Number</h4>
+
+<p>By default, all languages except <code class="language-plaintext highlighter-rouge">plaintext</code>, <code class="language-plaintext highlighter-rouge">console</code>, and <code class="language-plaintext highlighter-rouge">terminal</code> will display line numbers. When you want to hide the line number of a code block, add the class <code class="language-plaintext highlighter-rouge">nolineno</code> to it:</p>
+
+<div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">```</span><span class="nl">shell
+</span><span class="nb">echo</span> <span class="s1">'No more line numbers!'</span>
+<span class="p">```</span>
+{: .nolineno }
+</code></pre></div></div>
+
+<h4 id="specifying-the-filename">Specifying the Filename</h4>
+
+<p>You may have noticed that the code language will be displayed at the top of the code block. If you want to replace it with the file name, you can add the attribute <code class="language-plaintext highlighter-rouge">file</code> to achieve this:</p>
+
+<div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">```</span><span class="nl">shell
+</span><span class="c"># content</span>
+<span class="p">```</span>
+{: file="path/to/file" }
+</code></pre></div></div>
+
+<h4 id="liquid-codes">Liquid Codes</h4>
+
+<p>If you want to display the <strong>Liquid</strong> snippet, surround the liquid code with <code class="language-plaintext highlighter-rouge">{% raw %}</code> and <code class="language-plaintext highlighter-rouge">{% endraw %}</code>:</p>
+
+<div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{% raw %}
+<span class="p">```</span><span class="nl">liquid
+</span><span class="cp">{%</span><span class="w"> </span><span class="nt">if</span><span class="w"> </span><span class="nv">product</span><span class="p">.</span><span class="nv">title</span><span class="w"> </span><span class="ow">contains</span><span class="w"> </span><span class="s1">'Pack'</span><span class="w"> </span><span class="cp">%}</span>
+  This product's title contains the word Pack.
+<span class="cp">{%</span><span class="w"> </span><span class="nt">endif</span><span class="w"> </span><span class="cp">%}</span>
+<span class="p">```</span>
+{% endraw %}
+</code></pre></div></div>
+
+<p>Or adding <code class="language-plaintext highlighter-rouge">render_with_liquid: false</code> (Requires Jekyll 4.0 or higher) to the post’s YAML block.</p>
+
+<h2 id="mathematics">Mathematics</h2>
+
+<p>We use <a href="https://www.mathjax.org/"><strong>MathJax</strong></a> to generate mathematics. For website performance reasons, the mathematical feature won’t be loaded by default. But it can be enabled by:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="na">math</span><span class="pi">:</span> <span class="kc">true</span>
+<span class="nn">---</span>
+</code></pre></div></div>
+
+<p>After enabling the mathematical feature, you can add math equations with the following syntax:</p>
+
+<ul>
+  <li><strong>Block math</strong> should be added with <code class="language-plaintext highlighter-rouge">$$ math $$</code> with <strong>mandatory</strong> blank lines before and after <code class="language-plaintext highlighter-rouge">$$</code>
+    <ul>
+      <li><strong>Inserting equation numbering</strong> should be added with <code class="language-plaintext highlighter-rouge">$$\begin{equation} math \end{equation}$$</code></li>
+      <li><strong>Referencing equation numbering</strong> should be done with <code class="language-plaintext highlighter-rouge">\label{eq:label_name}</code> in the equation block and <code class="language-plaintext highlighter-rouge">\eqref{eq:label_name}</code> inline with text (see example below)</li>
+    </ul>
+  </li>
+  <li><strong>Inline math</strong> (in lines) should be added with <code class="language-plaintext highlighter-rouge">$$ math $$</code> without any blank line before or after <code class="language-plaintext highlighter-rouge">$$</code></li>
+  <li><strong>Inline math</strong> (in lists) should be added with <code class="language-plaintext highlighter-rouge">\$$ math $$</code></li>
+</ul>
+
+<div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">&lt;!-- Block math, keep all blank lines --&gt;</span>
+
+$$
+LaTeX_math_expression
+$$
+
+<span class="c">&lt;!-- Equation numbering, keep all blank lines  --&gt;</span>
+
+$$
+<span class="se">\b</span>egin{equation}
+  LaTeX_math_expression
+  <span class="se">\l</span>abel{eq:label_name}
+<span class="se">\e</span>nd{equation}
+$$
+
+Can be referenced as <span class="se">\e</span>qref{eq:label_name}.
+
+<span class="c">&lt;!-- Inline math in lines, NO blank lines --&gt;</span>
+
+"Lorem ipsum dolor sit amet, $$ LaTeX_math_expression $$ consectetur adipiscing elit."
+
+<span class="c">&lt;!-- Inline math in lists, escape the first `$` --&gt;</span>
+<span class="p">
+1.</span> <span class="se">\$</span>$ LaTeX_math_expression $$
+<span class="p">2.</span> <span class="se">\$</span>$ LaTeX_math_expression $$
+<span class="p">3.</span> <span class="se">\$</span>$ LaTeX_math_expression $$
+</code></pre></div></div>
+
+<blockquote class="prompt-tip">
+  <p>Starting with <code class="language-plaintext highlighter-rouge">v7.0.0</code>, configuration options for <strong>MathJax</strong> have been moved to file <code class="language-plaintext filepath highlighter-rouge">assets/js/data/mathjax.js</code>, and you can change the options as needed, such as adding <a href="https://docs.mathjax.org/en/latest/input/tex/extensions/index.html">extensions</a>.<br />
+If you are building the site via <code class="language-plaintext highlighter-rouge">chirpy-starter</code>, copy that file from the gem installation directory (check with command <code class="language-plaintext highlighter-rouge">bundle info --path jekyll-theme-chirpy</code>) to the same directory in your repository.</p>
+</blockquote>
+
+<h2 id="mermaid">Mermaid</h2>
+
+<p><a href="https://github.com/mermaid-js/mermaid"><strong>Mermaid</strong></a> is a great diagram generation tool. To enable it on your post, add the following to the YAML block:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="na">mermaid</span><span class="pi">:</span> <span class="kc">true</span>
+<span class="nn">---</span>
+</code></pre></div></div>
+
+<p>Then you can use it like other markdown languages: surround the graph code with <code class="language-plaintext highlighter-rouge">```mermaid</code> and <code class="language-plaintext highlighter-rouge">```</code>.</p>
+
+<h2 id="learn-more">Learn More</h2>
+
+<p>For more knowledge about Jekyll posts, visit the <a href="https://jekyllrb.com/docs/posts/">Jekyll Docs: Posts</a>.</p>]]></content><author><name>cotes</name></author><category term="tmp" /><category term="jekyll-remote-theme-20260102-322802-5jruyj" /><category term="Blogging" /><category term="Tutorial" /><category term="writing" /><summary type="html"><![CDATA[This tutorial will guide you how to write a post in the Chirpy template, and it’s worth reading even if you’ve used Jekyll before, as many features require specific variables to be set.]]></summary></entry><entry><title type="html">Text and Typography</title><link href="http://localhost:4000/posts/text-and-typography/" rel="alternate" type="text/html" title="Text and Typography" /><published>2019-08-08T12:33:00+09:00</published><updated>2019-08-08T12:33:00+09:00</updated><id>http://localhost:4000/posts/text-and-typography</id><content type="html" xml:base="http://localhost:4000/posts/text-and-typography/"><![CDATA[<h2 id="headings">Headings</h2>
+
+<!-- markdownlint-capture -->
+<!-- markdownlint-disable -->
+<h1 class="mt-4 mb-0" id="h1--heading">H1 — heading</h1>
+
+<h2 data-toc-skip="" class="mt-4 mb-0" id="h2--heading">H2 — heading</h2>
+
+<h3 data-toc-skip="" class="mt-4 mb-0" id="h3--heading">H3 — heading</h3>
+
+<h4 data-toc-skip="" class="mt-4" id="h4--heading">H4 — heading</h4>
+<!-- markdownlint-restore -->
+
+<h2 id="paragraph">Paragraph</h2>
+
+<p>Quisque egestas convallis ipsum, ut sollicitudin risus tincidunt a. Maecenas interdum malesuada egestas. Duis consectetur porta risus, sit amet vulputate urna facilisis ac. Phasellus semper dui non purus ultrices sodales. Aliquam ante lorem, ornare a feugiat ac, finibus nec mauris. Vivamus ut tristique nisi. Sed vel leo vulputate, efficitur risus non, posuere mi. Nullam tincidunt bibendum rutrum. Proin commodo ornare sapien. Vivamus interdum diam sed sapien blandit, sit amet aliquam risus mattis. Nullam arcu turpis, mollis quis laoreet at, placerat id nibh. Suspendisse venenatis eros eros.</p>
+
+<h2 id="lists">Lists</h2>
+
+<h3 id="ordered-list">Ordered list</h3>
+
+<ol>
+  <li>Firstly</li>
+  <li>Secondly</li>
+  <li>Thirdly</li>
+</ol>
+
+<h3 id="unordered-list">Unordered list</h3>
+
+<ul>
+  <li>Chapter
+    <ul>
+      <li>Section
+        <ul>
+          <li>Paragraph</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="todo-list">ToDo list</h3>
+
+<ul class="task-list">
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Job
+    <ul class="task-list">
+      <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />Step 1</li>
+      <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />Step 2</li>
+      <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" />Step 3</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="description-list">Description list</h3>
+
+<dl>
+  <dt>Sun</dt>
+  <dd>the star around which the earth orbits</dd>
+  <dt>Moon</dt>
+  <dd>the natural satellite of the earth, visible by reflected light from the sun</dd>
+</dl>
+
+<h2 id="block-quote">Block Quote</h2>
+
+<blockquote>
+  <p>This line shows the <em>block quote</em>.</p>
+</blockquote>
+
+<h2 id="prompts">Prompts</h2>
+
+<!-- markdownlint-capture -->
+<!-- markdownlint-disable -->
+<blockquote class="prompt-tip">
+  <p>An example showing the <code class="language-plaintext highlighter-rouge">tip</code> type prompt.</p>
+</blockquote>
+
+<blockquote class="prompt-info">
+  <p>An example showing the <code class="language-plaintext highlighter-rouge">info</code> type prompt.</p>
+</blockquote>
+
+<blockquote class="prompt-warning">
+  <p>An example showing the <code class="language-plaintext highlighter-rouge">warning</code> type prompt.</p>
+</blockquote>
+
+<blockquote class="prompt-danger">
+  <p>An example showing the <code class="language-plaintext highlighter-rouge">danger</code> type prompt.</p>
+</blockquote>
+<!-- markdownlint-restore -->
+
+<h2 id="tables">Tables</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Company</th>
+      <th style="text-align: left">Contact</th>
+      <th style="text-align: right">Country</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">Alfreds Futterkiste</td>
+      <td style="text-align: left">Maria Anders</td>
+      <td style="text-align: right">Germany</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Island Trading</td>
+      <td style="text-align: left">Helen Bennett</td>
+      <td style="text-align: right">UK</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Magazzini Alimentari Riuniti</td>
+      <td style="text-align: left">Giovanni Rovelli</td>
+      <td style="text-align: right">Italy</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="links">Links</h2>
+
+<p><a href="http://127.0.0.1:4000">http://127.0.0.1:4000</a></p>
+
+<h2 id="footnote">Footnote</h2>
+
+<p>Click the hook will locate the footnote<sup id="fnref:footnote"><a href="#fn:footnote" class="footnote" rel="footnote" role="doc-noteref">1</a></sup>, and here is another footnote<sup id="fnref:fn-nth-2"><a href="#fn:fn-nth-2" class="footnote" rel="footnote" role="doc-noteref">2</a></sup>.</p>
+
+<h2 id="inline-code">Inline code</h2>
+
+<p>This is an example of <code class="language-plaintext highlighter-rouge">Inline Code</code>.</p>
+
+<h2 id="filepath">Filepath</h2>
+
+<p>Here is the <code class="language-plaintext filepath highlighter-rouge">/path/to/the/file.extend</code>.</p>
+
+<h2 id="code-blocks">Code blocks</h2>
+
+<h3 id="common">Common</h3>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>This is a common code snippet, without syntax highlight and line number.
+</code></pre></div></div>
+
+<h3 id="specific-language">Specific Language</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="o">[</span> <span class="nv">$?</span> <span class="nt">-ne</span> 0 <span class="o">]</span><span class="p">;</span> <span class="k">then
+  </span><span class="nb">echo</span> <span class="s2">"The command was not successful."</span><span class="p">;</span>
+  <span class="c">#do the needful / exit</span>
+<span class="k">fi</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h3 id="specific-filename">Specific filename</h3>
+
+<div file="_sass/jekyll-theme-chirpy.scss" class="language-sass highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">@import</span>
+  <span class="s2">"colors/light-typography"</span><span class="o">,</span>
+  <span class="s2">"colors/dark-typography"</span><span class="o">;</span>
+</code></pre></div></div>
+
+<h2 id="mathematics">Mathematics</h2>
+
+<p>The mathematics powered by <a href="https://www.mathjax.org/"><strong>MathJax</strong></a>:</p>
+
+\[\begin{equation}
+  \sum_{n=1}^\infty 1/n^2 = \frac{\pi^2}{6}
+  \label{eq:series}
+\end{equation}\]
+
+<p>We can reference the equation as \eqref{eq:series}.</p>
+
+<p>When $a \ne 0$, there are two solutions to $ax^2 + bx + c = 0$ and they are</p>
+
+\[x = {-b \pm \sqrt{b^2-4ac} \over 2a}\]
+
+<h2 id="mermaid-svg">Mermaid SVG</h2>
+
+<pre><code class="language-mermaid"> gantt
+  title  Adding GANTT diagram functionality to mermaid
+  apple :a, 2017-07-20, 1w
+  banana :crit, b, 2017-07-23, 1d
+  cherry :active, c, after b a, 1d
+</code></pre>
+
+<h2 id="images">Images</h2>
+
+<h3 id="default-with-caption">Default (with caption)</h3>
+
+<p><img src="/posts/20190808/mockup.png" alt="Desktop View" width="972" height="589" />
+<em>Full screen width and center alignment</em></p>
+
+<h3 id="left-aligned">Left aligned</h3>
+
+<p><img src="/posts/20190808/mockup.png" alt="Desktop View" width="972" height="589" class="w-75 normal" /></p>
+
+<h3 id="float-to-left">Float to left</h3>
+
+<p><img src="/posts/20190808/mockup.png" alt="Desktop View" width="972" height="589" class="w-50 left" />
+Praesent maximus aliquam sapien. Sed vel neque in dolor pulvinar auctor. Maecenas pharetra, sem sit amet interdum posuere, tellus lacus eleifend magna, ac lobortis felis ipsum id sapien. Proin ornare rutrum metus, ac convallis diam volutpat sit amet. Phasellus volutpat, elit sit amet tincidunt mollis, felis mi scelerisque mauris, ut facilisis leo magna accumsan sapien. In rutrum vehicula nisl eget tempor. Nullam maximus ullamcorper libero non maximus. Integer ultricies velit id convallis varius. Praesent eu nisl eu urna finibus ultrices id nec ex. Mauris ac mattis quam. Fusce aliquam est nec sapien bibendum, vitae malesuada ligula condimentum.</p>
+
+<h3 id="float-to-right">Float to right</h3>
+
+<p><img src="/posts/20190808/mockup.png" alt="Desktop View" width="972" height="589" class="w-50 right" />
+Praesent maximus aliquam sapien. Sed vel neque in dolor pulvinar auctor. Maecenas pharetra, sem sit amet interdum posuere, tellus lacus eleifend magna, ac lobortis felis ipsum id sapien. Proin ornare rutrum metus, ac convallis diam volutpat sit amet. Phasellus volutpat, elit sit amet tincidunt mollis, felis mi scelerisque mauris, ut facilisis leo magna accumsan sapien. In rutrum vehicula nisl eget tempor. Nullam maximus ullamcorper libero non maximus. Integer ultricies velit id convallis varius. Praesent eu nisl eu urna finibus ultrices id nec ex. Mauris ac mattis quam. Fusce aliquam est nec sapien bibendum, vitae malesuada ligula condimentum.</p>
+
+<h3 id="darklight-mode--shadow">Dark/Light mode &amp; Shadow</h3>
+
+<p>The image below will toggle dark/light mode based on theme preference, notice it has shadows.</p>
+
+<p><img src="/posts/20190808/devtools-light.png" alt="light mode only" class="light w-75 shadow rounded-10" w="1212" h="668" />
+<img src="/posts/20190808/devtools-dark.png" alt="dark mode only" class="dark w-75 shadow rounded-10" w="1212" h="668" /></p>
+
+<h2 id="video">Video</h2>
+
+<iframe class="embed-video" loading="lazy" src="https://www.youtube.com/embed/Balreaj8Yqs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>
+
+<h2 id="reverse-footnote">Reverse Footnote</h2>
+
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:footnote">
+      <p>The footnote source <a href="#fnref:footnote" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:fn-nth-2">
+      <p>The 2nd footnote source <a href="#fnref:fn-nth-2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+  </ol>
+</div>]]></content><author><name>cotes</name></author><category term="tmp" /><category term="jekyll-remote-theme-20260102-322802-5jruyj" /><category term="Blogging" /><category term="Demo" /><category term="typography" /><summary type="html"><![CDATA[Examples of text, typography, math equations, diagrams, flowcharts, pictures, videos, and more.]]></summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="http://localhost:4000/commons/devices-mockup.png" /><media:content medium="image" url="http://localhost:4000/commons/devices-mockup.png" xmlns:media="http://search.yahoo.com/mrss/" /></entry></feed>

@@ -1,3 +1,35 @@
+# Jekyll
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+tmp/
+
+# Bundler
+vendor/
+.bundle/
 Gemfile.lock
-.claude
-.idea
+
+# Backup files
+_backup/
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# System
+.DS_Store
+Thumbs.db
+
+# Development
+.claude/
+
+# Node (if using npm for any frontend tools)
+node_modules/
+package-lock.json
+
+# Logs
+*.log
