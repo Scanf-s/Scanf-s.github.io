@@ -260,13 +260,8 @@ func TestLoadConfig_Integration(t *testing.T) {
 
 ## Test coverage
 
-### Original
-
-`0%` (No test cases at all)
-
-### New
-
 > It still needs more test cases to improve the current test coverage!
 
-<img width="887" height="164" alt="image" src="https://github.com/user-attachments/assets/625fd046-d6e0-4b78-bbb2-11129838be54" />
+<img width="1056" height="201" alt="image" src="https://github.com/user-attachments/assets/00460d2b-58a8-46b3-9051-d418ee8e0d8c" />
+
 
