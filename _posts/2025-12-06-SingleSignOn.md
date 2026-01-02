@@ -2,7 +2,7 @@
 layout: post
 title:  "Building a Single Sign-On (SSO) System: Our Journey with AWS Cognito"
 date:   2025-12-05 19:00:00 +0900
-categories: Backend
+categories: [Backend]
 tags: [AWS, Golang, Python, SSO]
 ---
 
