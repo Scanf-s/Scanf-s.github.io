@@ -68,6 +68,10 @@ This allows our team to stop worrying about hackers and focus on building cool f
 > To make sure our RDS database and Cognito stayed perfectly in sync, we used AWS Lambda Triggers. 
 > We designed a `Hybrid` strategy that changes its behavior depending on what the user is doing.
 
+![image2](https://github.com/user-attachments/assets/26ef13cf-3de6-4705-b84a-1c5d84799d26)
+
+![image3](https://github.com/user-attachments/assets/eea74150-a3d7-4eac-878e-3965d8d7a458)
+
 ### Sign-Up: Synchronous way
 
 > When a user signs up using a social provider, the logic is different depending on the platform:
