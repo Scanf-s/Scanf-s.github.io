@@ -76,6 +76,15 @@ seo_tag_version: 2.8.0
 pwa:
   enabled: false
 
+# HTML Compression - preserve code block formatting
+compress_html:
+  clippings: all
+  comments: all
+  endings: []
+  startings: []
+  blanklines: true
+  profile: false
+
 # Exclude from processing
 exclude:
   - .sass-cache/
