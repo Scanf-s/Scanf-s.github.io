@@ -1,177 +1,484 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ko-KR"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" hreflang="ko-KR" /><updated>2026-01-02T18:36:46+09:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Otty.Yang’s Document</title><subtitle>Technical document for development and learning</subtitle><entry><title type="html">Single Sign On service implementation task</title><link href="http://localhost:4000/posts/SingleSignOn/" rel="alternate" type="text/html" title="Single Sign On service implementation task" /><published>2025-12-05T19:00:00+09:00</published><updated>2025-12-05T19:00:00+09:00</updated><id>http://localhost:4000/posts/SingleSignOn</id><content type="html" xml:base="http://localhost:4000/posts/SingleSignOn/"><![CDATA[<h1 id="overview">Overview</h1>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ko-KR"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" hreflang="ko-KR" /><updated>2026-01-17T23:59:51+09:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Jace’s Blog</title><subtitle>Technical document for development and learning</subtitle><entry><title type="html">Replacing Custom TokenBucket with Standard RateLimiter in Cadence CLI</title><link href="http://localhost:4000/posts/replacing-tokenbucket-in-cadence-cli/" rel="alternate" type="text/html" title="Replacing Custom TokenBucket with Standard RateLimiter in Cadence CLI" /><published>2026-01-17T00:00:00+09:00</published><updated>2026-01-17T00:00:00+09:00</updated><id>http://localhost:4000/posts/replacing-tokenbucket-in-cadence-cli</id><content type="html" xml:base="http://localhost:4000/posts/replacing-tokenbucket-in-cadence-cli/"><![CDATA[<h1 id="overview">Overview</h1>
+<p>Recently, I contributed to <a href="https://github.com/cadence-workflow/cadence">Cadence</a>, which is a distributed orchestration engine.<br />
+I helped the task about refactor some old code used for rate limiting.</p>
 
-<p><img src="https://github.com/user-attachments/assets/587e12f6-c071-47b1-9783-6146a37c1377" alt="image" /></p>
+<h2 id="why-this-change">Why this change?</h2>
 
-<p>The ITSupport team at Soongsil University manages diverse projects with various members in the club.<br />
-Every project has presentation and service layers to handle user requests and provide proper data to clients.<br />
-But when we develop backend applications, we always have to implement authentication logic for each project.<br />
-This consumes a lot of development resources, and inexperienced developers are managing JWT themselves, so security issues always exist.
-To solve the current inefficient process, we decided to apply a Single Sign-On service to our services</p>
+<p>Cadence had its own code for rate limiting in a package called <code class="language-plaintext highlighter-rouge">common/tokenbucket</code>.<br />
+However, this code was old and redundant. The Go standard library (and the extended library <code class="language-plaintext highlighter-rouge">golang.org/x/time/rate</code>) already provides a very good rate limiter.</p>
 
-<h1 id="problems">Problems</h1>
+<p>Using standard libraries is better because they are well-maintained and tested by many people.<br />
+So, there was an issue (<a href="https://github.com/cadence-workflow/cadence/issues/7562">#7562</a>) to replace this custom code.</p>
 
-<h2 id="1-can-we-build-our-own-sso-service">1. Can We Build Our Own SSO Service?</h2>
+<h2 id="my-task">My Task</h2>
 
-<p>Implementing an SSO service from scratch is not as simple as it appears.<br />
-It requires us to become an Identity Provider—similar to Google, Apple, or GitHub and centrally manage access across services.<br />
-This brings with it numerous technical hurdles and operational responsibilities.</p>
+<p>My task was to replace the custom <code class="language-plaintext highlighter-rouge">tokenbucket</code> in the <strong>Cadence CLI</strong>.
+The CLI uses rate limiting for admin commands like <code class="language-plaintext highlighter-rouge">AdminDelete</code>.</p>
 
-<p>First, strict security is non-negotiable.<br />
-SSO creates a Single Point of Failure.<br />
-We must be thoroughly prepared for threats like CSRF, XSS, token sniffing, and replay attacks.<br />
-This demands extensive security knowledge and resources, as a breach in the SSO server would be critical for user trust.</p>
+<h2 id="how-i-did-it">How I did it</h2>
 
-<p>Second, complying to standards is challenging.<br />
-Implementing a flawless OAuth2 and OIDC protocol is difficult.<br />
-We need to support various grant types (e.g., Authorization Code, Client Credentials) and implement security measures like PKCE to protect SPA clients from token sniffing.</p>
+<h3 id="1-replacing-the-implementation">1. Replacing the Implementation</h3>
 
-<p>Third, we need a precise key management system.<br />
-To establish trust, we must handle token rotation, access management, and revocation logic ourselves.<br />
-This involves signing tokens with asymmetric cryptography and regularly rotating keys while maintaining a JWK endpoint for client verification.</p>
+<p>I replaced <code class="language-plaintext highlighter-rouge">tokenbucket.New</code> with <code class="language-plaintext highlighter-rouge">rate.NewLimiter</code>.  I also used the <code class="language-plaintext highlighter-rouge">Wait(ctx)</code> method.<br />
+This is a big improvement because <code class="language-plaintext highlighter-rouge">Wait</code> respects the <code class="language-plaintext highlighter-rouge">context</code>. If a user cancels the command (like pressing Ctrl+C), the rate limiter stops waiting immediately.</p>
 
-<p>Fourth, managing authorization and consent is complex.<br />
-We need to enforce strict scope restrictions for each client.<br />
-Furthermore, we must build a dedicated UI to obtain and manage user consent for accessing personal data.</p>
+<p><strong>Before:</strong></p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">ratelimiter</span> <span class="o">:=</span> <span class="n">tokenbucket</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="n">rps</span><span class="p">,</span> <span class="n">clock</span><span class="o">.</span><span class="n">NewRealTimeSource</span><span class="p">())</span>
+<span class="c">// ...</span>
+<span class="n">ratelimiter</span><span class="o">.</span><span class="n">Consume</span><span class="p">(</span><span class="m">1</span><span class="p">)</span> <span class="c">// Custom blocking call</span>
+</code></pre></div></div>
 
-<h2 id="2-how-do-we-sync-the-cognito-user-pool-and-existing-database-user-table">2. How do we sync the Cognito User Pool and Existing Database User Table?</h2>
+<p><strong>After:</strong></p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">ratelimiter</span> <span class="o">:=</span> <span class="n">clock</span><span class="o">.</span><span class="n">NewRatelimiter</span><span class="p">(</span><span class="n">rate</span><span class="o">.</span><span class="n">Limit</span><span class="p">(</span><span class="n">rps</span><span class="p">),</span> <span class="n">rps</span><span class="p">)</span>
+<span class="c">// ...</span>
+<span class="k">if</span> <span class="n">err</span> <span class="o">=</span> <span class="n">ratelimiter</span><span class="o">.</span><span class="n">Wait</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">Context</span><span class="p">);</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">err</span>
+<span class="p">}</span>
+</code></pre></div></div>
 
-<p>We maintain our own user table within our RDS instance, which operates independently of the Cognito User Pool.
-The challenge lies in linking these two distinct data sources.</p>
+<h3 id="2-finding-a-potential-problem-poc">2. Finding a Potential Problem (POC)</h3>
 
-<p>The default JWT payload issued by Cognito does not contain our internal user identifiers, such as the Primary Key from our RDS table. <br />
-Without this identifiable information in the token, there is no direct way to map an authenticated session back to the specific user row in our existing database.</p>
+<p>While I make a PR for this and from the reviewer, there is a question about:</p>
+<blockquote>
+  <p><em>“What happens if the user provides a negative number for RPS?”</em></p>
+</blockquote>
 
-<p>Also, when leveraging AWS Cognito for our main service, we must consider: <br />
-<strong>“How do we synchronize the Cognito User Pool with our RDS user table?”</strong></p>
+<p>I did some research (Proof of Concept) to see how Go’s <code class="language-plaintext highlighter-rouge">rate.NewLimiter</code> behaves in edge cases.</p>
 
-<p>A simple answer might be to use a Post-Confirmation Lambda trigger immediately after the Cognito process.<br />
-However, in my case, I have to carefully consider both data integrity and user experience.</p>
+<h4 id="test-1-if-rps-limit-is-negative">Test 1: If RPS (Limit) is negative</h4>
 
-<p>Cognito provides Lambda triggers for events before and after authentication.<br />
-Typically, we use a post-process Lambda function to insert or update user data in the RDS user table.<br />
-There are two primary approaches to achieve this:</p>
+<blockquote>
+  <p>Reference: https://cs.opensource.google/go/x/time/+/master:rate/rate.go</p>
+</blockquote>
 
-<h3 id="1-insert-and-update-in-synchronous-way">1. Insert and Update in synchronous way</h3>
+<p>I found that if the limit is negative, the first request works because it uses the “burst” tokens.<br />
+But every request after that will calculate a delay of <code class="language-plaintext highlighter-rouge">rate.InfDuration</code>. This means the process will hang forever!</p>
 
-<p>If we adopt a synchronous approach, the user must wait until the RDS task is complete.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
 
-<p><strong>[Pros]</strong>  <br />
-This ensures the user is successfully created in the RDS user table, making the service more robust in terms of data integrity.</p>
+<span class="k">import</span> <span class="p">(</span>
+    <span class="s">"log"</span>
+    <span class="s">"golang.org/x/time/rate"</span>
+<span class="p">)</span>
 
-<p><strong>[Cons]</strong><br />
-If the job fails, the user cannot receive tokens from Cognito.<br />
-Furthermore, if the database task is delayed or times out, the user has to wait too long, or the login process might fail entirely.<br />
-This can negatively impact the user experience.</p>
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"########### POC: If limit is negative ###########"</span><span class="p">)</span>
+    <span class="n">limiter</span> <span class="o">:=</span> <span class="n">rate</span><span class="o">.</span><span class="n">NewLimiter</span><span class="p">(</span><span class="o">-</span><span class="m">1</span><span class="p">,</span> <span class="m">1</span><span class="p">)</span>
 
-<h3 id="2-insert-and-update-in-asynchronous-way">2. Insert and Update in asynchronous way</h3>
+    <span class="n">log</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"########### 1st trial: Reserve token ###########"</span><span class="p">)</span>
+    <span class="n">reserve</span> <span class="o">:=</span> <span class="n">limiter</span><span class="o">.</span><span class="n">Reserve</span><span class="p">()</span>
+    <span class="k">if</span> <span class="o">!</span><span class="n">reserve</span><span class="o">.</span><span class="n">OK</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"########### Reservation Failed ###########"</span><span class="p">)</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">delay</span> <span class="o">:=</span> <span class="n">reserve</span><span class="o">.</span><span class="n">Delay</span><span class="p">()</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"Reserved.... required delay: %v"</span><span class="p">,</span> <span class="n">delay</span><span class="p">)</span>
+    <span class="p">}</span>
 
-<p>If we use an asynchronous approach, the user doesn’t have to wait for the RDS task to finish.<br />
-The Post-Confirmation Lambda sends a message to AWS SQS and returns immediately.<br />
-This allows the user to proceed without waiting for the RDS operation.</p>
+    <span class="n">log</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"########### 2nd trial: Reserve token ###########"</span><span class="p">)</span>
+    <span class="n">reserve2</span> <span class="o">:=</span> <span class="n">limiter</span><span class="o">.</span><span class="n">Reserve</span><span class="p">()</span>
+    <span class="k">if</span> <span class="o">!</span><span class="n">reserve2</span><span class="o">.</span><span class="n">OK</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"########### Reservation Failed ###########"</span><span class="p">)</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">delay</span> <span class="o">:=</span> <span class="n">reserve2</span><span class="o">.</span><span class="n">Delay</span><span class="p">()</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"Reserved.... required delay: %v"</span><span class="p">,</span> <span class="n">delay</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">Printf</span><span class="p">(</span><span class="s">"Is Delay InfDuration?: %v"</span><span class="p">,</span> <span class="n">delay</span> <span class="o">==</span> <span class="n">rate</span><span class="o">.</span><span class="n">InfDuration</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
 
-<p><strong>[Pros]</strong><br />
-It significantly improves the user experience by reducing latency.</p>
+<p><strong>Result:</strong></p>
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>2026/01/14 13:22:28 ########### POC: If limit is negative ###########
+2026/01/14 13:22:28 ########### 1st trial: Reserve token ###########
+2026/01/14 13:22:28 Reserved.... required delay: 0s
+2026/01/14 13:22:28 ########### 2nd trial: Reserve token ###########
+2026/01/14 13:22:28 Reserved.... required delay: 2562047h47m16.854775807s
+2026/01/14 13:22:28 Is Delay InfDuration?: true
+</code></pre></div></div>
+<p>The second request waits for <strong>2,562,047 hours</strong>! This is basically a kind of <code class="language-plaintext highlighter-rouge">deadlock</code>.</p>
 
-<p><strong>[Cons]</strong> <br />
-However, this method also has disadvantages.<br />
-If a user requests their data immediately after logging in, but the SQS consumer hasn’t inserted the data into RDS yet, the user might receive a 404 error despite being signed in.
-Also, For a new user, if the consumer task fails, the user record won’t exist in the database, tainting data integrity.</p>
+<h4 id="test-2-if-burst-is-negative">Test 2: If Burst is negative</h4>
+
+<p>If the burst value is negative, the consumer cannot receive any tokens at all.</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"########### POC: If burst is negative ###########"</span><span class="p">)</span>
+    <span class="n">limiter</span> <span class="o">:=</span> <span class="n">rate</span><span class="o">.</span><span class="n">NewLimiter</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="o">-</span><span class="m">1</span><span class="p">)</span>
+
+    <span class="n">log</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"########### 1st trial: Reserve token ###########"</span><span class="p">)</span>
+    <span class="n">reserve</span> <span class="o">:=</span> <span class="n">limiter</span><span class="o">.</span><span class="n">Reserve</span><span class="p">()</span>
+    <span class="k">if</span> <span class="o">!</span><span class="n">reserve</span><span class="o">.</span><span class="n">OK</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"########### Reservation Failed ###########"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>Result:</strong></p>
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>2026/01/14 13:58:20 ########### POC: If burst is negative ###########
+2026/01/14 13:58:20 ########### 1st trial: Reserve token ###########
+2026/01/14 13:58:20 ########### Reservation Failed ###########
+</code></pre></div></div>
+
+<h3 id="3-adding-validation">3. Adding Validation</h3>
+
+<p>Because Go’s standard library doesn’t have internal validation for positive values, I added a check in the Cadence CLI code. This prevents the “hanging” behavior if a user enters a wrong value.</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">rps</span> <span class="o">:=</span> <span class="n">c</span><span class="o">.</span><span class="n">Int</span><span class="p">(</span><span class="n">FlagRPS</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">rps</span> <span class="o">&lt;=</span> <span class="m">0</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">commoncli</span><span class="o">.</span><span class="n">Problem</span><span class="p">(</span><span class="s">"Required positive value of FlagRPS for ratelimiter but got: "</span><span class="p">,</span> <span class="n">rps</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="result">Result</h2>
+
+<p>The changes were merged in PR <a href="https://github.com/cadence-workflow/cadence/pull/7585">#7585</a>.</p>
+
+<p><strong>What I achieved:</strong></p>
+<ul>
+  <li><strong>Cleaner Code:</strong> I removed the old custom <code class="language-plaintext highlighter-rouge">tokenbucket</code> from the CLI.</li>
+  <li><strong>Standardization:</strong> <code class="language-plaintext highlighter-rouge">Cadence</code> is now use the standard <code class="language-plaintext highlighter-rouge">golang.org/x/time/rate</code> in <code class="language-plaintext highlighter-rouge">AdminDelete</code>.</li>
+  <li><strong>Safety:</strong> The CLI is now protected from deadlocks caused by invalid RPS values.</li>
+</ul>
+
+<p>It was a great experience to contribute and learn about these small but important details in Go!</p>]]></content><author><name></name></author><category term="Backend" /><category term="OpenSource" /><category term="Golang" /><category term="Cadence" /><summary type="html"><![CDATA[Overview Recently, I contributed to Cadence, which is a distributed orchestration engine. I helped the task about refactor some old code used for rate limiting.]]></summary></entry><entry><title type="html">Fixing the ‘using’ Directive Bug and Adding HTTP Status Code Constants in EZ Language</title><link href="http://localhost:4000/posts/ez-http-constants-using-directive-fix/" rel="alternate" type="text/html" title="Fixing the ‘using’ Directive Bug and Adding HTTP Status Code Constants in EZ Language" /><published>2026-01-02T00:00:00+09:00</published><updated>2026-01-02T00:00:00+09:00</updated><id>http://localhost:4000/posts/ez-http-constants-using-directive-fix</id><content type="html" xml:base="http://localhost:4000/posts/ez-http-constants-using-directive-fix/"><![CDATA[<h1 id="overview">Overview</h1>
+
+<p>I contributed to <a href="https://github.com/SchoolyB/EZ">EZ</a>, which is a modern programming language built with Go.
+I worked on two related issues: adding HTTP status code constants to the <code class="language-plaintext highlighter-rouge">@http</code> module (Issue #901) and fixing a bug where the <code class="language-plaintext highlighter-rouge">using</code> directive did not bring stdlib constants into scope (Issue #909).</p>
+
+<h2 id="background-what-is-the-using-directive">Background: What is the <code class="language-plaintext highlighter-rouge">using</code> Directive?</h2>
+
+<p>In EZ, you can import modules and use them with a namespace prefix:</p>
+
+<pre><code class="language-ez">import @http
+
+do main() {
+    println("${http.OK}")  // Works: 200
+}
+</code></pre>
+
+<p>The <code class="language-plaintext highlighter-rouge">using</code> directive allows you to access module exports without the prefix:</p>
+
+<pre><code class="language-ez">import @std
+using std
+
+do main() {
+    println("Hello")  // No need for std.println
+}
+</code></pre>
+
+<h2 id="the-problem">The Problem</h2>
+
+<h3 id="issue-901-need-for-http-status-code-constants">Issue #901: Need for HTTP Status Code Constants</h3>
+
+<p>Users had to use raw integers for HTTP status code comparisons:</p>
+
+<pre><code class="language-ez">if response.status == 200 {
+    // ...
+}
+</code></pre>
+
+<p>This is not readable. We wanted to support named constants like:</p>
+
+<pre><code class="language-ez">if response.status == http.OK {
+    // ...
+}
+</code></pre>
+
+<h3 id="issue-909-using-directive-only-works-for-functions">Issue #909: <code class="language-plaintext highlighter-rouge">using</code> Directive Only Works for Functions</h3>
+
+<p>After implementing the HTTP constants, we discovered a bigger problem. The <code class="language-plaintext highlighter-rouge">using</code> directive did <strong>not</strong> bring constants into scope:</p>
+
+<pre><code class="language-ez">import @http
+using http
+
+do main() {
+    println("${OK}")        // Error: undefined variable 'OK'
+    println("${http.OK}")   // Works: 200
+}
+</code></pre>
+
+<p>This bug affected <strong>all</strong> stdlib modules with constants:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">@http</code> - OK, CREATED, NOT_FOUND, etc.</li>
+  <li><code class="language-plaintext highlighter-rouge">@os</code> - MAC_OS, LINUX, WINDOWS</li>
+  <li><code class="language-plaintext highlighter-rouge">@math</code> - PI, E, PHI, SQRT2</li>
+  <li><code class="language-plaintext highlighter-rouge">@time</code> - SUNDAY, MONDAY, JANUARY, HOUR, DAY</li>
+  <li><code class="language-plaintext highlighter-rouge">@io</code> - READ_ONLY, WRITE_ONLY, SEEK_START</li>
+  <li><code class="language-plaintext highlighter-rouge">@db</code> - ALPHA, NUMERIC, KEY_LEN</li>
+  <li><code class="language-plaintext highlighter-rouge">@uuid</code> - NIL</li>
+</ul>
+
+<h2 id="my-solution">My Solution</h2>
+
+<p>I solved both issues with a two-part approach.</p>
+
+<h3 id="part-1-adding-http-status-code-constants-907">Part 1: Adding HTTP Status Code Constants (#907)</h3>
+
+<p>First, I added HTTP status code constants to <code class="language-plaintext highlighter-rouge">pkg/stdlib/http.go</code>:</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">const</span> <span class="p">(</span>
+    <span class="n">OK</span>                    <span class="kt">int64</span> <span class="o">=</span> <span class="m">200</span>
+    <span class="n">CREATED</span>               <span class="kt">int64</span> <span class="o">=</span> <span class="m">201</span>
+    <span class="n">ACCEPTED</span>              <span class="kt">int64</span> <span class="o">=</span> <span class="m">202</span>
+    <span class="n">NO_CONTENT</span>            <span class="kt">int64</span> <span class="o">=</span> <span class="m">204</span>
+    <span class="n">BAD_REQUEST</span>           <span class="kt">int64</span> <span class="o">=</span> <span class="m">400</span>
+    <span class="n">UNAUTHORIZED</span>          <span class="kt">int64</span> <span class="o">=</span> <span class="m">401</span>
+    <span class="n">FORBIDDEN</span>             <span class="kt">int64</span> <span class="o">=</span> <span class="m">403</span>
+    <span class="n">NOT_FOUND</span>             <span class="kt">int64</span> <span class="o">=</span> <span class="m">404</span>
+    <span class="n">INTERNAL_SERVER_ERROR</span> <span class="kt">int64</span> <span class="o">=</span> <span class="m">500</span>
+    <span class="c">// ... and more</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+<p>Then I exposed these as builtins in the <code class="language-plaintext highlighter-rouge">HttpBuiltins</code> map:</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">"http.OK"</span><span class="o">:</span> <span class="p">{</span>
+    <span class="n">Fn</span><span class="o">:</span> <span class="k">func</span><span class="p">(</span><span class="n">args</span> <span class="o">...</span><span class="n">object</span><span class="o">.</span><span class="n">Object</span><span class="p">)</span> <span class="n">object</span><span class="o">.</span><span class="n">Object</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="o">&amp;</span><span class="n">object</span><span class="o">.</span><span class="n">Integer</span><span class="p">{</span><span class="n">Value</span><span class="o">:</span> <span class="n">big</span><span class="o">.</span><span class="n">NewInt</span><span class="p">(</span><span class="n">OK</span><span class="p">)}</span>
+    <span class="p">},</span>
+<span class="p">},</span>
+</code></pre></div></div>
+
+<h3 id="part-2-fixing-the-using-directive-bug-979">Part 2: Fixing the <code class="language-plaintext highlighter-rouge">using</code> Directive Bug (#979)</h3>
+
+<p>The core problem was in the <strong>type checker</strong>. It only checked for functions when validating identifiers accessed via <code class="language-plaintext highlighter-rouge">using</code>, not constants.</p>
+
+<p><strong>Step 1: Add <code class="language-plaintext highlighter-rouge">IsConstant</code> flag to all stdlib constants</strong></p>
+
+<p>I added an <code class="language-plaintext highlighter-rouge">IsConstant: true</code> flag to distinguish constants from functions:</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">"http.OK"</span><span class="o">:</span> <span class="p">{</span>
+    <span class="n">Fn</span><span class="o">:</span> <span class="k">func</span><span class="p">(</span><span class="n">args</span> <span class="o">...</span><span class="n">object</span><span class="o">.</span><span class="n">Object</span><span class="p">)</span> <span class="n">object</span><span class="o">.</span><span class="n">Object</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="o">&amp;</span><span class="n">object</span><span class="o">.</span><span class="n">Integer</span><span class="p">{</span><span class="n">Value</span><span class="o">:</span> <span class="n">big</span><span class="o">.</span><span class="n">NewInt</span><span class="p">(</span><span class="n">OK</span><span class="p">)}</span>
+    <span class="p">},</span>
+    <span class="n">IsConstant</span><span class="o">:</span> <span class="no">true</span><span class="p">,</span>  <span class="c">// Added this flag</span>
+<span class="p">},</span>
+</code></pre></div></div>
+
+<p>I applied this to all constants across 7 stdlib modules: <code class="language-plaintext highlighter-rouge">db.go</code>, <code class="language-plaintext highlighter-rouge">http.go</code>, <code class="language-plaintext highlighter-rouge">io.go</code>, <code class="language-plaintext highlighter-rouge">math.go</code>, <code class="language-plaintext highlighter-rouge">os.go</code>, <code class="language-plaintext highlighter-rouge">time.go</code>, and <code class="language-plaintext highlighter-rouge">uuid.go</code>.</p>
+
+<p><strong>Step 2: Add <code class="language-plaintext highlighter-rouge">isStdlibConstant()</code> function to type checker</strong></p>
+
+<p>I added a new function in <code class="language-plaintext highlighter-rouge">pkg/typechecker/typechecker.go</code> to check if an identifier is a stdlib constant:</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="p">(</span><span class="n">tc</span> <span class="o">*</span><span class="n">TypeChecker</span><span class="p">)</span> <span class="n">isStdlibConstant</span><span class="p">(</span><span class="n">moduleName</span><span class="p">,</span> <span class="n">constName</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="n">stdConsts</span> <span class="o">:=</span> <span class="k">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="k">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">bool</span><span class="p">{</span>
+        <span class="s">"http"</span><span class="o">:</span> <span class="p">{</span>
+            <span class="s">"OK"</span><span class="o">:</span> <span class="no">true</span><span class="p">,</span> <span class="s">"CREATED"</span><span class="o">:</span> <span class="no">true</span><span class="p">,</span> <span class="s">"BAD_REQUEST"</span><span class="o">:</span> <span class="no">true</span><span class="p">,</span>
+            <span class="s">"NOT_FOUND"</span><span class="o">:</span> <span class="no">true</span><span class="p">,</span> <span class="s">"INTERNAL_SERVER_ERROR"</span><span class="o">:</span> <span class="no">true</span><span class="p">,</span>
+            <span class="c">// ... all HTTP constants</span>
+        <span class="p">},</span>
+        <span class="s">"os"</span><span class="o">:</span> <span class="p">{</span>
+            <span class="s">"MAC_OS"</span><span class="o">:</span> <span class="no">true</span><span class="p">,</span> <span class="s">"LINUX"</span><span class="o">:</span> <span class="no">true</span><span class="p">,</span> <span class="s">"WINDOWS"</span><span class="o">:</span> <span class="no">true</span><span class="p">,</span>
+            <span class="s">"CURRENT_OS"</span><span class="o">:</span> <span class="no">true</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s">"math"</span><span class="o">:</span> <span class="p">{</span>
+            <span class="s">"PI"</span><span class="o">:</span> <span class="no">true</span><span class="p">,</span> <span class="s">"E"</span><span class="o">:</span> <span class="no">true</span><span class="p">,</span> <span class="s">"PHI"</span><span class="o">:</span> <span class="no">true</span><span class="p">,</span> <span class="s">"SQRT2"</span><span class="o">:</span> <span class="no">true</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="c">// ... other modules</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">modConsts</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">stdConsts</span><span class="p">[</span><span class="n">moduleName</span><span class="p">];</span> <span class="n">ok</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">modConsts</span><span class="p">[</span><span class="n">constName</span><span class="p">]</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="no">false</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>Step 3: Update <code class="language-plaintext highlighter-rouge">isKnownIdentifier()</code> to check constants</strong></p>
+
+<p>I modified the <code class="language-plaintext highlighter-rouge">isKnownIdentifier()</code> function to also check stdlib constants when <code class="language-plaintext highlighter-rouge">using</code> is declared:</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">// Check if it's a stdlib constant accessible via 'using'</span>
+<span class="k">for</span> <span class="n">moduleName</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">tc</span><span class="o">.</span><span class="n">fileUsingModules</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="n">tc</span><span class="o">.</span><span class="n">isStdlibConstant</span><span class="p">(</span><span class="n">moduleName</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="no">true</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="k">if</span> <span class="n">tc</span><span class="o">.</span><span class="n">currentScope</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="n">moduleName</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">tc</span><span class="o">.</span><span class="n">currentScope</span><span class="o">.</span><span class="n">usingModules</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">tc</span><span class="o">.</span><span class="n">isStdlibConstant</span><span class="p">(</span><span class="n">moduleName</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="no">true</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>Step 4: Add unit tests for each module</strong></p>
+
+<p>I wrote unit tests to verify the fix works for all stdlib constants:</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">TestHttpModuleConstantWithoutModuleNamespace</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">input</span> <span class="o">:=</span> <span class="s">`
+import @http
+using http
+
+do main() {
+    const status_200 int = OK
+    const status_404 int = NOT_FOUND
+    const status_500 int = INTERNAL_SERVER_ERROR
+}
+`</span>
+    <span class="n">tc</span> <span class="o">:=</span> <span class="n">typecheck</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">input</span><span class="p">)</span>
+    <span class="n">assertNoErrors</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">tc</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="result">Result</h2>
+
+<p>The changes were merged in PR <a href="https://github.com/SchoolyB/EZ/pull/907">#907</a> and PR <a href="https://github.com/SchoolyB/EZ/pull/979">#979</a>.</p>
+
+<p><strong>What was achieved:</strong></p>
+<ul>
+  <li><strong>New Feature:</strong> Users can now use readable HTTP status code constants (<code class="language-plaintext highlighter-rouge">http.OK</code>, <code class="language-plaintext highlighter-rouge">http.NOT_FOUND</code>, etc.)</li>
+  <li><strong>Bug Fix:</strong> The <code class="language-plaintext highlighter-rouge">using</code> directive now correctly brings all stdlib constants into scope</li>
+  <li><strong>Consistency:</strong> Constants now work the same way as functions with <code class="language-plaintext highlighter-rouge">using</code></li>
+  <li><strong>Test Coverage:</strong> Added unit tests for all stdlib module constants</li>
+</ul>
+
+<p><strong>Now users can write clean code like:</strong></p>
+
+<pre><code class="language-ez">import @http
+using http
+
+do main() {
+    temp resp, err = http.get("https://api.example.com")
+    if resp.status == OK {
+        println("Success!")
+    } else if resp.status == NOT_FOUND {
+        println("Resource not found")
+    }
+}
+</code></pre>
+
+<p>This was a great experience contributing to a programming language project and understanding how type checkers validate identifiers!</p>]]></content><author><name></name></author><category term="Backend" /><category term="OpenSource" /><category term="Golang" /><category term="EZ" /><category term="Programming Language" /><summary type="html"><![CDATA[Overview]]></summary></entry><entry><title type="html">Building a Single Sign-On (SSO) System: Our Journey with AWS Cognito</title><link href="http://localhost:4000/posts/SingleSignOn/" rel="alternate" type="text/html" title="Building a Single Sign-On (SSO) System: Our Journey with AWS Cognito" /><published>2025-12-05T19:00:00+09:00</published><updated>2025-12-05T19:00:00+09:00</updated><id>http://localhost:4000/posts/SingleSignOn</id><content type="html" xml:base="http://localhost:4000/posts/SingleSignOn/"><![CDATA[<h1 id="overview">Overview</h1>
+
+<p>The ITSupport team at Soongsil University manages a wide variety of digital projects. 
+From community boards to event management systems, we have a lot going on. 
+However, every time we started a new project, we hit the same wall</p>
+
+<blockquote>
+  <p>we had to build a brand-new login system from scratch for every single application.</p>
+</blockquote>
+
+<p>Writing this authentication code again and again was not just a waste of time. It has also a security risk. 
+If a developer made even a small mistake with security—like incorrectly managing JWT (JSON Web Tokens),
+it could lead to serious vulnerabilities.</p>
+
+<p>To stop this cycle and make our apps much safer, we decided to build a Single Sign-On (SSO) system. 
+With SSO, a user only needs to remember one account to access every service we provide.</p>
 
 <hr />
 
-<h1 id="solution">Solution</h1>
-
-<h2 id="1-implement-single-sign-on-service">1. Implement Single Sign On service</h2>
-
-<p>To solve the problems mentioned above, I evaluated two primary strategies:</p>
-<ul>
-  <li>Building a self-hosted provider using a framework</li>
-  <li>Adopting AWS managed service.</li>
-</ul>
-
-<h3 id="option-1-use-authlib-library-in-python-implement-custom-single-sign-on-server">Option 1. Use authlib library in Python, implement custom single sign on server</h3>
+<h1 id="problems">Problems</h1>
 
 <blockquote>
-  <p><a href="https://docs.authlib.org/en/latest/">Authlib Document</a><br />
-The first option was to build our own Identity Provider (IdP) using Python Authlib.<br />
-This is a powerful library for building OAuth and OpenID Connect servers.</p>
+  <p>Building an SSO system is harder than it looks. We faced two main challenges</p>
 </blockquote>
 
-<p><strong>[Pros]</strong><br />
-This approach offers complete control over the authentication flow and database schema synchronization.<br />
-We could design the login UI exactly as we wanted and avoid vendor lock-in.</p>
+<h2 id="1-should-we-build-our-own-sso-service">1. Should we build our own SSO service?</h2>
 
-<p><strong>[Cons]</strong><br />
-However, as mentioned in the Problems section, this would force us to handle all security aspects like:</p>
+<p>Creating a custom login service is a massive engineering task. 
+It means we have to become an “Identity Provider” (IdP), similar to how Google or GitHub works. 
+This brings heavy responsibilities!</p>
+
 <ul>
-  <li>token signing</li>
-  <li>key rotation</li>
-  <li>CSRF protection</li>
-  <li>Compliance with strict OAuth2 standards</li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">Big Security Risks</code>: An SSO server is a “Single Point of Failure.” If it gets hacked, every single connected service is in danger. We would have to build defenses against complex attacks like CSRF (tricking users into taking actions) and XSS (injecting malicious scripts).</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">Complex International Rules</code>: Following standards like OAuth2 and OIDC is very difficult for a student team. These protocols have many “rules” that must be followed perfectly to keep data safe.</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">Managing Secret Keys</code>: We would have to handle “Asymmetric Cryptography” to sign tokens. This means managing secret keys and rotating them regularly. One small mistake in this process could break the login for every user at once.</p>
+  </li>
 </ul>
 
-<p>I think, for a student team with limited time and security expertise,<br />
-the risk of implementation errors, and potential security problems was too high.</p>
+<h2 id="2-syncing-data-between-cognito-and-our-database">2. Syncing Data Between Cognito and Our Database</h2>
 
-<h3 id="option-2-use-aws-cognito-as-sso-server">Option 2. Use AWS Cognito as SSO server</h3>
+<p>We already had a user table in our AWS RDS (Database) from previous projects. If we moved to AWS Cognito, we would suddenly have user data living in two different places.</p>
+
+<p>This created two big questions:</p>
+
+<ul>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">Linking Identifiers</code>: Cognito gives users its own ID numbers, but our database has its own “Primary Keys.” How do we connect “User A” in Cognito to the correct row in our RDS table?</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">Staying in Sync</code>: When a new student joins through Cognito, how do we make sure they are automatically and correctly added to our internal database? We couldn’t afford to have missing data.</p>
+  </li>
+</ul>
+
+<hr />
+
+<h1 id="solutions">Solutions</h1>
+
+<h2 id="1-choosing-aws-cognito">1. Choosing AWS Cognito</h2>
+
+<p>We carefully compared two options. 
+Building our own custom server using a library like <code class="language-plaintext highlighter-rouge">Authlib</code>, or using a managed service from <code class="language-plaintext highlighter-rouge">AWS</code>.</p>
+
+<p>In the end, we chose <code class="language-plaintext highlighter-rouge">AWS Cognito</code>. 
+For a team of our size, it is very cost-effective because of the AWS Free Tier. 
+More importantly, AWS handles all the difficult security work. 
+This allows our team to stop worrying about hackers and focus on building cool features that students actually use.</p>
+
+<h2 id="2-the-hybrid-way-to-sync-user-data">2. The Hybrid Way to Sync User Data</h2>
 
 <blockquote>
-  <p><a href="https://docs.aws.amazon.com/cognito/latest/developerguide/what-is-amazon-cognito.html">AWS Cognito</a><br />
-The second option was to utilize AWS Cognito, a fully managed service solution provided by AWS.</p>
-</blockquote>
-
-<p><strong>[Pros]</strong><br />
-Cognito resolve our concerns about implementing the robust complex OAuth and OIDC logic ensuring standard protocol.  <br />
-It provides built-in security features like adaptive authentication, MFA, and automated token management.<br />
-Most importantly, it shifts the responsibility for security and infrastructure maintenance from our team to AWS.</p>
-
-<p><strong>[Cons]</strong><br />
-Customizing the hosted UI is limited, and there is a dependency on the AWS ecosystem (Vendor Lock-in).<br />
-Furthermore, we have to manually synchronize the Cognito user pool with our existing User database.</p>
-
-<h3 id="final-decision">Final decision</h3>
-
-<p>As my decision, I selected <code class="language-plaintext highlighter-rouge">Option 2</code>.<br />
-Because our service currently has a low Monthly Active Users (MAU) count, the AWS Free Tier makes this solution cost-effective!<br />
-More importantly, it allows us to focus on our core business logic rather than handling the complexities of authentication security from scratch.</p>
-
-<h2 id="2-user-data-synchronization-strategy-using-cognito-post-confirmation-lambda-triggers-using-hybrid-pattern">2. User Data Synchronization Strategy using Cognito Post-Confirmation Lambda Triggers using Hybrid Pattern</h2>
-
-<blockquote>
-  <p>As discussed in the problem section, synchronizing the Cognito User Pool with our legacy RDS table was a critical challenge.<br />
-I decided to apply a hybrid approach that combines both synchronous and asynchronous patterns to balance data integrity with user experience.</p>
+  <p>To make sure our RDS database and Cognito stayed perfectly in sync, we used AWS Lambda Triggers. 
+We designed a <code class="language-plaintext highlighter-rouge">Hybrid</code> strategy that changes its behavior depending on what the user is doing.</p>
 </blockquote>
 
 <p><img src="https://github.com/user-attachments/assets/26ef13cf-3de6-4705-b84a-1c5d84799d26" alt="image2" /></p>
 
-<h3 id="for-sign-up-synchronous">For Sign-Up (Synchronous)</h3>
-<p>Data integrity is important when a user is first created.<br />
-Therefore, I configured the <code class="language-plaintext highlighter-rouge">Post-Confirmation Lambda trigger</code> to execute synchronously.<br />
-When a user sign up, post-confirmation Lambda function is triggered and attempts to insert the user record into our RDS.<br />
-And If the RDS insertion fails, the Lambda returns an error, and Cognito rolls back the sign-up.  <br />
-This guarantees that a user exists in Cognito IF AND ONLY IF they exist in our RDS. No ghost users are created.</p>
+<p><img src="https://github.com/user-attachments/assets/eea74150-a3d7-4eac-878e-3965d8d7a458" alt="image3" /></p>
 
-<h3 id="for-sign-in-asynchronous">For Sign-In (Asynchronous)</h3>
-<p>Once a user is successfully registered, subsequent updates (e.g., last login time, profile updates) do not need to block the user’s flow.<br />
-For these events, we use an asynchronous pattern via <code class="language-plaintext highlighter-rouge">Post-Authentication Lambda Trigger</code> with <code class="language-plaintext highlighter-rouge">SQS</code> to update the RDS without adding latency to the login process.</p>
+<h3 id="sign-up-synchronous-way">Sign-Up: Synchronous way</h3>
 
-<h2 id="3-network-architecture-for-user-synchronization">3. Network Architecture for user synchronization</h2>
-<p>To implement the sign-up/sign-in process securely, I had to solve a network connectivity issue.<br />
-Our RDS instance resides in a private subnet within a separate VPC managed by another project.</p>
+<blockquote>
+  <p>When a user signs up using a social provider, the logic is different depending on the platform:</p>
+</blockquote>
 
-<p>Instead of exposing the database to the public internet or merging VPCs, I leveraged AWS VPC Peering feature.</p>
 <ul>
-  <li>First, I provisioned a dedicated <code class="language-plaintext highlighter-rouge">Auth VPC</code> for our Lambda functions.</li>
-  <li>Second, I established a <code class="language-plaintext highlighter-rouge">Peering Connection</code> between the Auth VPC and the Database VPC.</li>
-  <li>Third, I configured a proper <code class="language-plaintext highlighter-rouge">Security Group</code> for connectivity and secure insurance.</li>
-  <li>Forth, The Post-Confirmation/Post-Authentication Lambda are deployed within the private subnet of the Auth VPC.</li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">Kakao Login</code>: Many students already have records in our RDS associated with their Kakao Identity. 
+If the Kakao ID already exists in our database, the Lambda updates that record with the new cognito_sub. 
+This links the old account with the new SSO system. If the user is new, we create a completely new record in the RDS.</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">Google Login</code>: For Google users, we simply create a new user record in the RDS and save the cognito_sub.</p>
+  </li>
 </ul>
 
 <blockquote>
-  <p>With this setup, the Lambda function securely accesses the RDS instance via a private IP address.<br />
-This architecture ensures that our database remains isolated from the public internet<br />
-while allowing the authentication service to maintain strict data consistency.</p>
+  <p>This logic ensures that every user in Cognito is perfectly mapped to a userId in our database. 
+We also store the RDS userId in a Cognito Custom Attribute, so it is included in the JWT token for all our apps to use.</p>
 </blockquote>
+
+<h3 id="sign-in-asynchronous-way">Sign-In: Asynchronous way</h3>
+
+<p>When an existing user logs in, we usually just want to update minor things, like their “last login time.” 
+This doesn’t need to be perfect right away.</p>
+
+<p>We use a Lambda function that sends a quick message to AWS SQS (a waiting line for data) and finishes instantly.
+The user is logged in immediately without waiting for the database to finish its update. 
+This keeps the login experience fast and smooth.</p>
+
+<h3 id="connecting-the-networks-safely">Connecting the Networks Safely</h3>
+
+<p>Our database is hidden in a <code class="language-plaintext highlighter-rouge">Private Subnet</code> to keep it safe from the public internet.<br />
+To let our login functions talk to the database securely, we used a feature called VPC Peering.</p>
+
+<ul>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">Separate Network</code>: We built a dedicated <code class="language-plaintext highlighter-rouge">Auth VPC</code> just for our login functions.</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">The Private Bridge</code>: We connected this <code class="language-plaintext highlighter-rouge">Auth VPC</code> to our <code class="language-plaintext highlighter-rouge">Database VPC</code> using a private bridge (VPC Peering).</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">Digital Gatekeepers</code>: We used Security Groups to ensure that only our specific login functions are allowed to cross the bridge and talk to the database. No one else from the outside can get in.</p>
+  </li>
+</ul>
 
 <hr />
 
@@ -187,20 +494,14 @@ while allowing the authentication service to maintain strict data consistency.</
 
 <h3 id="sign-in-process-response-time">Sign in process response time</h3>
 
-<hr />
+<hr />]]></content><author><name></name></author><category term="Backend" /><category term="AWS" /><category term="Golang" /><category term="Python" /><category term="SSO" /><summary type="html"><![CDATA[Overview]]></summary></entry><entry><title type="html">Making Our School News Scraper 90% Faster and Simpler</title><link href="http://localhost:4000/posts/SSUnnounce-Scraper/" rel="alternate" type="text/html" title="Making Our School News Scraper 90% Faster and Simpler" /><published>2025-12-05T19:00:00+09:00</published><updated>2025-12-05T19:00:00+09:00</updated><id>http://localhost:4000/posts/SSUnnounce-Scraper</id><content type="html" xml:base="http://localhost:4000/posts/SSUnnounce-Scraper/"><![CDATA[<h1 id="overview">Overview</h1>
 
-<h1 id="concerns">Concerns</h1>
+<p>In December 2025, I fixed a big problem with my project: the SSU Announcement Scraper. This tool checks school news and sends alerts to students. 
+For a long time, the old version was slow, expensive, and broke very easily.</p>
 
-<h2 id="need-of-infrastructure-refactor">Need of Infrastructure refactor</h2>
-
-<h2 id="nat-instance-high-availability-problem">NAT Instance High Availability problem</h2>]]></content><author><name></name></author><category term="ITSupport" /><category term="Infrastructure" /><category term="Backend" /><summary type="html"><![CDATA[Overview]]></summary></entry><entry><title type="html">Making Our School News Scraper 90% Faster and Simpler</title><link href="http://localhost:4000/posts/SSUnnounce-Scraper/" rel="alternate" type="text/html" title="Making Our School News Scraper 90% Faster and Simpler" /><published>2025-12-05T19:00:00+09:00</published><updated>2025-12-05T19:00:00+09:00</updated><id>http://localhost:4000/posts/SSUnnounce-Scraper</id><content type="html" xml:base="http://localhost:4000/posts/SSUnnounce-Scraper/"><![CDATA[<h1 id="overview">Overview</h1>
-
-<p>In December 2025, I fixed a big problem with my project: the SSU Announcement Scraper.<br />
-This tool checks school news and sends alerts to students. For a long time, the old version was slow, expensive, and broke very easily.</p>
-
-<p>To solve this, I performed a major “clean-up.”<br />
+<p>To solve this, I performed a major refactoring task. 
 I deleted 700 lines of old code and made the system much faster and more reliable.<br />
-Here is a detailed look at how I transformed a “fragile” prototype into a strong service.</p>
+Here is a detailed look at how I transformed a fragile prototype into a strong service.</p>
 
 <h1 id="problems">Problems</h1>
 
@@ -209,21 +510,20 @@ Here is a detailed look at how I transformed a “fragile” prototype into a st
 While this worked at first, it was a bad way to build a long-term service because…</p>
 </blockquote>
 
-<h2 id="1it-was-too-heavy">1.It was too heavy</h2>
-<p>Running a whole browser just to read a few lines of text uses a massive amount of memory.<br />
-It is like using a big heavy truck to deliver a single small letter.<br />
-Every time the scraper ran, the system had to “start the engine” (Chrome), which wasted resources.</p>
+<h2 id="1-it-was-too-heavy">1. It was too heavy</h2>
+<p>Running a whole browser just to read a few lines of text uses a massive amount of memory.
+It is like using a big heavy truck to deliver a single small letter.
+Every time the scraper ran, the system had to start the engine (Chrome), which wasted resources.</p>
 
 <h2 id="2-it-was-slow-and-expensive">2. It was slow and expensive</h2>
-<p>Because it had to load images, scripts, and styles, it took 30 to 60 seconds to finish.<br />
-In the cloud world (AWS), time is money.<br />
+<p>Because it had to load images, scripts, and styles, it took 30 to 60 seconds to finish. In the cloud world (AWS), time is money.<br />
 Long execution times meant higher monthly bills.</p>
 
 <h2 id="3-it-broke-easily-maintenance-problem">3. It broke easily (Maintenance problem)</h2>
 <p>If the school changed just one small thing on their website—like a button color or a table name—the scraper would stop working.<br />
 I had to spend hours every week fixing the code manually just to keep it running.</p>
 
-<h2 id="4-no-safety-net-no-tests">4. No safety net (No tests)</h2>
+<h2 id="4-no-tests-at-all">4. No tests at all</h2>
 <p>I didn’t have any automated tests to check if the code was working.<br />
 This meant I only found out about bugs after the service stopped sending news to students.</p>
 
@@ -251,20 +551,20 @@ Instead of looking at the website like a human, I found a way to talk to a serve
 
 <h2 id="2-using-aws-ssm-for-smart-settings">2. Using AWS SSM for Smart Settings</h2>
 
-<p>In the past, if I wanted to add a new school department to the scraper, I had to rewrite the code and upload it again.<br />
-Now, I use <code class="language-plaintext highlighter-rouge">AWS Systems Manager (SSM)</code>.<br />
-This acts like a “Remote Control.” I can just change a setting in the AWS dashboard, and the scraper updates itself automatically.<br />
-I don’t need to touch the code at all.</p>
+<p>In the past, if I wanted to add a new school department to the scraper, I had to rewrite the code and upload it again. 
+Now, I use <code class="language-plaintext highlighter-rouge">AWS Systems Manager (SSM)</code>. I can just change a setting in the AWS dashboard, and the scraper updates itself automatically. I don’t need to touch the code at all.</p>
 
 <h2 id="3-technical-details">3. Technical Details</h2>
 
-<p>Furthermore, I used three main engineering tricks to make the service truly professional.</p>
+<blockquote>
+  <p>Furthermore, I used three main engineering modifications to make the service efficiently</p>
+</blockquote>
 
 <h3 id="go-errgroup">Go <code class="language-plaintext highlighter-rouge">errgroup</code></h3>
 
-<p>Checking websites one by one is very boring and slow.<br />
-If you have 10 websites and each takes 3 seconds, that is 30 seconds total.<br />
-I used Go’s errgroup to check all websites at the same time (in parallel).</p>
+<p>Checking websites one by one is very boring and slow. 
+If you have 10 websites and each takes 3 seconds, that is 30 seconds total. 
+I used Go’s errgroup to check all APIs at the same time (in parallel).</p>
 
 <div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">// Checking many websites at once</span>
 <span class="n">g</span><span class="p">,</span> <span class="n">gCtx</span> <span class="o">:=</span> <span class="n">errgroup</span><span class="o">.</span><span class="n">WithContext</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
@@ -280,7 +580,7 @@ I used Go’s errgroup to check all websites at the same time (in parallel).</p>
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>Because of this “parallel” work, the entire task now takes only less than 3 seconds total (5 API requests), no matter how many websites we add.</p>
+<p>Because of this “parallel” work, the entire task now takes only approximately 3 seconds total (5 API requests), no matter how many APIs we add.</p>
 
 <div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site1
 2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site2
@@ -304,8 +604,8 @@ I used Go’s errgroup to check all websites at the same time (in parallel).</p>
 <p>We never want to send the same news alert to students twice.<br />
 To prevent this, I added a “Fast Index” called a GSI (Global Secondary Index) to my database.</p>
 
-<p>Instead of looking through thousands of old news items one by one (which is very slow),<br />
-the code uses the index to quickly ask: “Give me the 100 newest items for this department.”<br />
+<p>Instead of looking through thousands of old news items one by one (which is very slow and expensive), 
+the code uses the index to quickly ask: “Give me the 100 newest items for this department.” 
 This “indexed search” is incredibly fast and keeps our database costs very low.</p>
 
 <div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">// Fast search using an Index instead of a slow scan</span>
@@ -321,7 +621,7 @@ This “indexed search” is incredibly fast and keeps our database costs very l
   <p>Reference: https://docs.aws.amazon.com/ko_kr/code-library/latest/ug/go_2_dynamodb_code_examples.html</p>
 </blockquote>
 
-<h3 id="testing-mocks-and-integration-tests">Testing: Mocks and Integration Tests</h3>
+<h3 id="testing-unit-and-integration-tests">Testing: Unit and Integration Tests</h3>
 
 <p>To make sure the code never breaks, I implemented two levels of testing</p>
 
@@ -416,12 +716,10 @@ This lets me check the logic of my code on my laptop without needing the interne
 <h4 id="2-integration-tests">2. Integration Tests</h4>
 
 <blockquote>
-  <p>This is the cool part. 
-I used LocalStack and Testcontainers to run a “Fake AWS” inside a Docker container</p>
-</blockquote>
-
-<p>This allows me to test if the code can actually talk to AWS SSM and DynamoDB correctly.<br />
+  <p>I used LocalStack and Testcontainers to run a “Fake AWS” inside a Docker container.
+This allows me to test if the code can actually talk to AWS SSM and DynamoDB correctly. 
 For example, my test starts a real container, sets up fake parameters, and checks if the code can read them</p>
+</blockquote>
 
 <div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">TestLoadConfig_Integration</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span><span class="n">testing</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">ctx</span> <span class="o">:=</span> <span class="n">context</span><span class="o">.</span><span class="n">Background</span><span class="p">()</span>
@@ -466,10 +764,10 @@ For example, my test starts a real container, sets up fake parameters, and check
       <td>71% Simpler</td>
     </tr>
     <tr>
-      <td>Reliability</td>
+      <td>Test Coverage</td>
       <td>No Tests</td>
       <td>Implemented unit/integration tests</td>
-      <td>38% Safer</td>
+      <td>51.8%</td>
     </tr>
   </tbody>
 </table>
@@ -486,17 +784,11 @@ For example, my test starts a real container, sets up fake parameters, and check
 
 <h2 id="test-coverage">Test coverage</h2>
 
-<h3 id="original-1">Original</h3>
-
-<p><code class="language-plaintext highlighter-rouge">0%</code> (No test cases at all)</p>
-
-<h3 id="new-1">New</h3>
-
 <blockquote>
   <p>It still needs more test cases to improve the current test coverage!</p>
 </blockquote>
 
-<p><img width="887" height="164" alt="image" src="https://github.com/user-attachments/assets/625fd046-d6e0-4b78-bbb2-11129838be54" /></p>]]></content><author><name></name></author><category term="ITSupport" /><category term="Backend" /><summary type="html"><![CDATA[Overview In December 2025, I fixed a big problem with my project: the SSU Announcement Scraper. This tool checks school news and sends alerts to students. For a long time, the old version was slow, expensive, and broke very easily. To solve this, I performed a major “clean-up.” I deleted 700 lines of old code and made the system much faster and more reliable. Here is a detailed look at how I transformed a “fragile” prototype into a strong service. Problems The old version used a “Headless Chrome” browser inside AWS Lambda to visit the school portal. While this worked at first, it was a bad way to build a long-term service because… 1.It was too heavy Running a whole browser just to read a few lines of text uses a massive amount of memory. It is like using a big heavy truck to deliver a single small letter. Every time the scraper ran, the system had to “start the engine” (Chrome), which wasted resources. 2. It was slow and expensive Because it had to load images, scripts, and styles, it took 30 to 60 seconds to finish. In the cloud world (AWS), time is money. Long execution times meant higher monthly bills. 3. It broke easily (Maintenance problem) If the school changed just one small thing on their website—like a button color or a table name—the scraper would stop working. I had to spend hours every week fixing the code manually just to keep it running. 4. No safety net (No tests) I didn’t have any automated tests to check if the code was working. This meant I only found out about bugs after the service stopped sending news to students. Solutions The biggest change was stopping the “web scraping” entirely. Instead of looking at the website like a human, I found a way to talk to a server directly using an API called SSUFID. 1. Cleaning and Organizing the Code I deleted the messy old code and wrote a new, unified system. Old code: 700+ lines of messy logic and complicated HTML rules. New code: Only 200 lines of clean, simple code. Result: A 72% reduction in code! It is now much easier for me (or anyone else) to read and understand how the system works. 2. Using AWS SSM for Smart Settings In the past, if I wanted to add a new school department to the scraper, I had to rewrite the code and upload it again. Now, I use AWS Systems Manager (SSM). This acts like a “Remote Control.” I can just change a setting in the AWS dashboard, and the scraper updates itself automatically. I don’t need to touch the code at all. 3. Technical Details Furthermore, I used three main engineering tricks to make the service truly professional. Go errgroup Checking websites one by one is very boring and slow. If you have 10 websites and each takes 3 seconds, that is 30 seconds total. I used Go’s errgroup to check all websites at the same time (in parallel). // Checking many websites at once g, gCtx := errgroup.WithContext(ctx) for _, url := range cfg.Urls { g.Go(func() error { // Fetch news from the API concurrently apiResponse, err := ssufid_request.SSUFIDRequest(gCtx, url) return nil }) } if err := g.Wait(); err != nil { log.Printf("Something went wrong during the task: %v", err) } Because of this “parallel” work, the entire task now takes only less than 3 seconds total (5 API requests), no matter how many websites we add. 2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site1 2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site2 2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site3 2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site4 2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site5 2025/12/30 12:53:48 [DEBUG] Deserialize API response body 2025/12/30 12:53:48 [DEBUG] Deserialize API response body 2025/12/30 12:53:48 [DEBUG] Deserialize API response body 2025/12/30 12:53:48 [DEBUG] Deserialize API response body 2025/12/30 12:53:48 [DEBUG] Deserialize API response body 2025/12/30 12:53:49 [DEBUG] Successfully deserialized API response body 2025/12/30 12:53:49 [DEBUG] Successfully deserialized API response body 2025/12/30 12:53:49 [DEBUG] Successfully deserialized API response body 2025/12/30 12:53:49 [DEBUG] Successfully deserialized API response body 2025/12/30 12:53:50 [DEBUG] Successfully deserialized API response body Fast search with DynamoDB GSI We never want to send the same news alert to students twice. To prevent this, I added a “Fast Index” called a GSI (Global Secondary Index) to my database. Instead of looking through thousands of old news items one by one (which is very slow), the code uses the index to quickly ask: “Give me the 100 newest items for this department.” This “indexed search” is incredibly fast and keeps our database costs very low. // Fast search using an Index instead of a slow scan input := &amp;dynamodb.QueryInput{ TableName: &amp;cfg.DatabaseName, IndexName: aws.String("TypeSubTypeCreatedAtIndex"), KeyConditionExpression: expr.KeyCondition(), ScanIndexForward: aws.Bool(false), // Get newest items first Limit: aws.Int32(100), } Reference: https://docs.aws.amazon.com/ko_kr/code-library/latest/ug/go_2_dynamodb_code_examples.html Testing: Mocks and Integration Tests To make sure the code never breaks, I implemented two levels of testing 1. Unit tests I created “fake” versions of the database. This lets me check the logic of my code on my laptop without needing the internet. //go:build unit // MockDynamoDBClient is a mock implementation of config.DynamoDBClient interface type MockDynamoDBClient struct { BatchWriteItemFunc func(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) BatchGetItemFunc func(ctx context.Context, params *dynamodb.BatchGetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchGetItemOutput, error) QueryFunc func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) } // BatchWriteItem implements the DynamoDBClient interface func (m *MockDynamoDBClient) BatchWriteItem(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) { // Mock Logic } // BatchGetItem implements the DynamoDBClient interface func (m *MockDynamoDBClient) BatchGetItem(ctx context.Context, params *dynamodb.BatchGetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchGetItemOutput, error) { // Mock Logic } // Query implements the DynamoDBClient interface func (m *MockDynamoDBClient) Query(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) { // Mock Logic } func TestBatchSaveAnnouncements(t *testing.T) { t.Parallel() testCases := []struct { name string mockDynamoClient *MockDynamoDBClient announcements []dto.ScrapeItem announcementSubType string expectedError bool validator func(*testing.T, error) }{ // Test case 1 { name: "Successfully add announcement batch into database", mockDynamoClient: &amp;MockDynamoDBClient{ BatchWriteItemFunc: func(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) { return &amp;dynamodb.BatchWriteItemOutput{}, nil }, }, announcements: createMockAnnouncements(2), expectedError: false, validator: func(t *testing.T, err error) { if err != nil { t.Errorf("Unexpected error: %v", err) } }, }, // Test case 2 { ... }, // Test case 3 { ... }, // Test case 4 { ... }, } for _, testCase := range testCases { t.Run(testCase.name, func(t *testing.T) { // Run and validate test cases }) } } // createMockAnnouncements is a helper function that generates mock announcements func createMockAnnouncements(count int) []dto.ScrapeItem { items := make([]dto.ScrapeItem, count) ... return items } 2. Integration Tests This is the cool part. I used LocalStack and Testcontainers to run a “Fake AWS” inside a Docker container This allows me to test if the code can actually talk to AWS SSM and DynamoDB correctly. For example, my test starts a real container, sets up fake parameters, and checks if the code can read them func TestLoadConfig_Integration(t *testing.T) { ctx := context.Background() // Start a real LocalStack container to act like AWS container, err := utils.GetTestContainer(ctx) if err != nil { t.Fatalf("Failed to get test container: %v", err) } defer container.Terminate(ctx) // ... set up fake SSM parameters and check if our code loads them correctly appConfig := LoadConfig(ctx) if appConfig.DatabaseName != "test-database" { t.Errorf("Expected 'test-database', but got '%s'", appConfig.DatabaseName) } } Results Metric Old Way (Scraping) New Way (API) Improvement Time to Finish 44 seconds 3 seconds 93% Faster Lines of Code 735 lines 208 lines 71% Simpler Reliability No Tests Implemented unit/integration tests 38% Safer Scraper execution time Original New Test coverage Original 0% (No test cases at all) New It still needs more test cases to improve the current test coverage!]]></summary></entry><entry><title type="html">Customize the Favicon</title><link href="http://localhost:4000/posts/customize-the-favicon/" rel="alternate" type="text/html" title="Customize the Favicon" /><published>2019-08-11T01:34:00+09:00</published><updated>2019-08-11T01:34:00+09:00</updated><id>http://localhost:4000/posts/customize-the-favicon</id><content type="html" xml:base="http://localhost:4000/posts/customize-the-favicon/"><![CDATA[<p>The <a href="https://www.favicon-generator.org/about/">favicons</a> of <a href="https://github.com/cotes2020/jekyll-theme-chirpy/"><strong>Chirpy</strong></a> are placed in the directory <code class="language-plaintext filepath highlighter-rouge">assets/img/favicons/</code>. You may want to replace them with your own. The following sections will guide you to create and replace the default favicons.</p>
+<p><img width="1056" height="201" alt="image" src="https://github.com/user-attachments/assets/00460d2b-58a8-46b3-9051-d418ee8e0d8c" /></p>]]></content><author><name></name></author><category term="Backend" /><category term="AWS" /><category term="Golang" /><category term="Refactoring" /><summary type="html"><![CDATA[Overview In December 2025, I fixed a big problem with my project: the SSU Announcement Scraper. This tool checks school news and sends alerts to students. For a long time, the old version was slow, expensive, and broke very easily. To solve this, I performed a major refactoring task. I deleted 700 lines of old code and made the system much faster and more reliable. Here is a detailed look at how I transformed a fragile prototype into a strong service. Problems The old version used a “Headless Chrome” browser inside AWS Lambda to visit the school portal. While this worked at first, it was a bad way to build a long-term service because… 1. It was too heavy Running a whole browser just to read a few lines of text uses a massive amount of memory. It is like using a big heavy truck to deliver a single small letter. Every time the scraper ran, the system had to start the engine (Chrome), which wasted resources. 2. It was slow and expensive Because it had to load images, scripts, and styles, it took 30 to 60 seconds to finish. In the cloud world (AWS), time is money. Long execution times meant higher monthly bills. 3. It broke easily (Maintenance problem) If the school changed just one small thing on their website—like a button color or a table name—the scraper would stop working. I had to spend hours every week fixing the code manually just to keep it running. 4. No tests at all I didn’t have any automated tests to check if the code was working. This meant I only found out about bugs after the service stopped sending news to students. Solutions The biggest change was stopping the “web scraping” entirely. Instead of looking at the website like a human, I found a way to talk to a server directly using an API called SSUFID. 1. Cleaning and Organizing the Code I deleted the messy old code and wrote a new, unified system. Old code: 700+ lines of messy logic and complicated HTML rules. New code: Only 200 lines of clean, simple code. Result: A 72% reduction in code! It is now much easier for me (or anyone else) to read and understand how the system works. 2. Using AWS SSM for Smart Settings In the past, if I wanted to add a new school department to the scraper, I had to rewrite the code and upload it again. Now, I use AWS Systems Manager (SSM). I can just change a setting in the AWS dashboard, and the scraper updates itself automatically. I don’t need to touch the code at all. 3. Technical Details Furthermore, I used three main engineering modifications to make the service efficiently Go errgroup Checking websites one by one is very boring and slow. If you have 10 websites and each takes 3 seconds, that is 30 seconds total. I used Go’s errgroup to check all APIs at the same time (in parallel). // Checking many websites at once g, gCtx := errgroup.WithContext(ctx) for _, url := range cfg.Urls { g.Go(func() error { // Fetch news from the API concurrently apiResponse, err := ssufid_request.SSUFIDRequest(gCtx, url) return nil }) } if err := g.Wait(); err != nil { log.Printf("Something went wrong during the task: %v", err) } Because of this “parallel” work, the entire task now takes only approximately 3 seconds total (5 API requests), no matter how many APIs we add. 2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site1 2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site2 2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site3 2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site4 2025/12/30 12:53:48 [DEBUG] Fetch announcement data from: https://site5 2025/12/30 12:53:48 [DEBUG] Deserialize API response body 2025/12/30 12:53:48 [DEBUG] Deserialize API response body 2025/12/30 12:53:48 [DEBUG] Deserialize API response body 2025/12/30 12:53:48 [DEBUG] Deserialize API response body 2025/12/30 12:53:48 [DEBUG] Deserialize API response body 2025/12/30 12:53:49 [DEBUG] Successfully deserialized API response body 2025/12/30 12:53:49 [DEBUG] Successfully deserialized API response body 2025/12/30 12:53:49 [DEBUG] Successfully deserialized API response body 2025/12/30 12:53:49 [DEBUG] Successfully deserialized API response body 2025/12/30 12:53:50 [DEBUG] Successfully deserialized API response body Fast search with DynamoDB GSI We never want to send the same news alert to students twice. To prevent this, I added a “Fast Index” called a GSI (Global Secondary Index) to my database. Instead of looking through thousands of old news items one by one (which is very slow and expensive), the code uses the index to quickly ask: “Give me the 100 newest items for this department.” This “indexed search” is incredibly fast and keeps our database costs very low. // Fast search using an Index instead of a slow scan input := &amp;dynamodb.QueryInput{ TableName: &amp;cfg.DatabaseName, IndexName: aws.String("TypeSubTypeCreatedAtIndex"), KeyConditionExpression: expr.KeyCondition(), ScanIndexForward: aws.Bool(false), // Get newest items first Limit: aws.Int32(100), } Reference: https://docs.aws.amazon.com/ko_kr/code-library/latest/ug/go_2_dynamodb_code_examples.html Testing: Unit and Integration Tests To make sure the code never breaks, I implemented two levels of testing 1. Unit tests I created “fake” versions of the database. This lets me check the logic of my code on my laptop without needing the internet. //go:build unit // MockDynamoDBClient is a mock implementation of config.DynamoDBClient interface type MockDynamoDBClient struct { BatchWriteItemFunc func(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) BatchGetItemFunc func(ctx context.Context, params *dynamodb.BatchGetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchGetItemOutput, error) QueryFunc func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) } // BatchWriteItem implements the DynamoDBClient interface func (m *MockDynamoDBClient) BatchWriteItem(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) { // Mock Logic } // BatchGetItem implements the DynamoDBClient interface func (m *MockDynamoDBClient) BatchGetItem(ctx context.Context, params *dynamodb.BatchGetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchGetItemOutput, error) { // Mock Logic } // Query implements the DynamoDBClient interface func (m *MockDynamoDBClient) Query(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) { // Mock Logic } func TestBatchSaveAnnouncements(t *testing.T) { t.Parallel() testCases := []struct { name string mockDynamoClient *MockDynamoDBClient announcements []dto.ScrapeItem announcementSubType string expectedError bool validator func(*testing.T, error) }{ // Test case 1 { name: "Successfully add announcement batch into database", mockDynamoClient: &amp;MockDynamoDBClient{ BatchWriteItemFunc: func(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) { return &amp;dynamodb.BatchWriteItemOutput{}, nil }, }, announcements: createMockAnnouncements(2), expectedError: false, validator: func(t *testing.T, err error) { if err != nil { t.Errorf("Unexpected error: %v", err) } }, }, // Test case 2 { ... }, // Test case 3 { ... }, // Test case 4 { ... }, } for _, testCase := range testCases { t.Run(testCase.name, func(t *testing.T) { // Run and validate test cases }) } } // createMockAnnouncements is a helper function that generates mock announcements func createMockAnnouncements(count int) []dto.ScrapeItem { items := make([]dto.ScrapeItem, count) ... return items } 2. Integration Tests I used LocalStack and Testcontainers to run a “Fake AWS” inside a Docker container. This allows me to test if the code can actually talk to AWS SSM and DynamoDB correctly. For example, my test starts a real container, sets up fake parameters, and checks if the code can read them func TestLoadConfig_Integration(t *testing.T) { ctx := context.Background() // Start a real LocalStack container to act like AWS container, err := utils.GetTestContainer(ctx) if err != nil { t.Fatalf("Failed to get test container: %v", err) } defer container.Terminate(ctx) // ... set up fake SSM parameters and check if our code loads them correctly appConfig := LoadConfig(ctx) if appConfig.DatabaseName != "test-database" { t.Errorf("Expected 'test-database', but got '%s'", appConfig.DatabaseName) } } Results Metric Old Way (Scraping) New Way (API) Improvement Time to Finish 44 seconds 3 seconds 93% Faster Lines of Code 735 lines 208 lines 71% Simpler Test Coverage No Tests Implemented unit/integration tests 51.8% Scraper execution time Original New Test coverage It still needs more test cases to improve the current test coverage!]]></summary></entry><entry><title type="html">Customize the Favicon</title><link href="http://localhost:4000/posts/customize-the-favicon/" rel="alternate" type="text/html" title="Customize the Favicon" /><published>2019-08-11T01:34:00+09:00</published><updated>2019-08-11T01:34:00+09:00</updated><id>http://localhost:4000/posts/customize-the-favicon</id><content type="html" xml:base="http://localhost:4000/posts/customize-the-favicon/"><![CDATA[<p>The <a href="https://www.favicon-generator.org/about/">favicons</a> of <a href="https://github.com/cotes2020/jekyll-theme-chirpy/"><strong>Chirpy</strong></a> are placed in the directory <code class="language-plaintext filepath highlighter-rouge">assets/img/favicons/</code>. You may want to replace them with your own. The following sections will guide you to create and replace the default favicons.</p>
 
 <h2 id="generate-the-favicon">Generate the favicon</h2>
 

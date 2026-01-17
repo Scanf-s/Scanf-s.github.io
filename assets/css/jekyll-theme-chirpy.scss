@@ -1,20 +1,22 @@
 ---
 ---
 
-@import 'jekyll-theme-chirpy';
+/* prettier-ignore */
+@use 'main
+{%- if jekyll.environment == 'production' -%}
+  .bundle
+{%- endif -%}
+';
 
 /* Custom code block styling */
 .highlight {
-  /* Add left padding to code blocks */
-  padding-left: 1rem;
+  padding-left: 1rem !important;
 }
 
-/* For code blocks without line numbers */
 div[class^='language-'] > pre {
-  padding-left: 1.5rem;
+  padding-left: 1.5rem !important;
 }
 
-/* Adjust inline code styling if needed */
 code.highlighter-rouge {
   padding-left: 0.4rem;
   padding-right: 0.4rem;
