@@ -6,7 +6,7 @@ lang: ko-KR
 timezone: Asia/Seoul
 
 # Site information
-title: Otty.Yang's Document
+title: Jace's Blog
 tagline: Technical Document
 description: >-
   Technical document for development and learning
@@ -17,7 +17,7 @@ github:
   username: Scanf-s
 
 social:
-  name: Otty.Yang
+  name: Jace (UiJong, Yang)
   email: sullung2yo@gmail.com
   links:
     - https://github.com/Scanf-s
