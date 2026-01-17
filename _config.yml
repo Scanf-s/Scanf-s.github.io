@@ -2,7 +2,7 @@
 # https://github.com/cotes2020/jekyll-theme-chirpy
 
 # Site settings
-lang: ko-KR
+lang: en
 timezone: Asia/Seoul
 
 # Site information
@@ -23,7 +23,7 @@ social:
     - https://github.com/Scanf-s
 
 # Theme settings
-theme_mode: dark  # [light | dark]
+# theme_mode: dark  # [light | dark] - Comment out to enable light/dark toggle
 
 # Avatar
 avatar: /assets/img/avatar.jpg
@@ -38,6 +38,17 @@ plugins:
   - jekyll-paginate
   - jekyll-redirect-from
   - jekyll-include-cache
+  - jekyll-archives
+
+# Jekyll Archives - generates category and tag pages
+jekyll-archives:
+  enabled: [categories, tags]
+  layouts:
+    category: category
+    tag: tag
+  permalinks:
+    tag: /tags/:name/
+    category: /categories/:name/
 
 # Pagination
 paginate: 10
