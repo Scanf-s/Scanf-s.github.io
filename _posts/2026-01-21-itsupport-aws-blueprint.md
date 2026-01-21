@@ -1,3 +1,11 @@
+---
+layout: post
+title:  "Cloud Infrastructure Improvement Strategy: ITSupport student club AWS infrastructure optimization"
+date:   2026-01-21 22:00:00 +0900
+categories: [Cloud]
+tags: [AWS, Terraform]
+---
+
 # Overview
 
 The current ITSupport AWS infrastructure faces several challenges, including low availability, cost inefficiency, and an outdated Terraform configuration. 
