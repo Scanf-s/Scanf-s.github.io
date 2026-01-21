@@ -12,7 +12,7 @@ The current ITSupport AWS infrastructure faces several challenges, including low
 This document proposes technical resolutions and a refined AWS architecture to address these issues.
 
 ## Previous AWS Infrastructure
-![img.png](img.png)
+<img width="820" height="546" alt="image" src="https://github.com/user-attachments/assets/8485a6f3-04b1-4d95-afb7-7730a0116764" />
 
 ### 1. Availability Issue
 The previous infrastructure had a Single Point of Failure (SPOF). 
@@ -51,7 +51,7 @@ I found that even with a t2.micro instance, utilization remains low.
 Therefore, I have allocated 0.25 vCPU and 1GB RAM per Fargate task. 
 To further reduce costs, I plan to utilize a 1-year Savings Plan for the Fargate clusters.
 
-![img_1.png](img_1.png)
+<img width="1839" height="651" alt="image" src="https://github.com/user-attachments/assets/8f6c6f26-1196-459e-b757-70093928011c" />
 
 Based on Seoul region I calculated for our production environment (per month)
 
@@ -74,13 +74,13 @@ This provides a balanced 2 vCPU and 4GB RAM environment for development at a sig
 Based on Seoul region, I calculated the instance monthly cost on `t4g.medium` spot instance.
 For one month usage, it requires only `$0.0136 * 730 = $9.928`
 
-![img_2.png](img_2.png)
+<img width="1141" height="147" alt="image" src="https://github.com/user-attachments/assets/e4825d55-60df-4943-9188-0dfa9fce0d6d" />
 
 **Second**, NAT instances must not be stopped for any reason. To improve throughput and cost-effectiveness, 
 I chose the t4g.micro instance. It can handle more traffic than the current t2.micro, as shown in the image below.
 > (Ref: https://aws.amazon.com/ko/ec2/instance-types/t4/)
 
-![img_3.png](img_3.png)
+<img width="1228" height="809" alt="image" src="https://github.com/user-attachments/assets/5787cbbe-c625-44f7-9aa6-3011e7065c89" />
 
 Additionally, by using a Savings Plan for the t4g.micro instances, 
 we can reduce costs even further compared to On-Demand pricing.
@@ -89,7 +89,7 @@ For one month usage, it requires only `$0.0072* 730 = $5.256`, the total price o
 (Please note that there is one more instance for the `PASSU` project, but it is not under my management.)
 > (Ref: https://aws.amazon.com/ko/savingsplans/compute-pricing/)
 
-![img_4.png](img_4.png)
+<img width="1101" height="121" alt="image" src="https://github.com/user-attachments/assets/9353f598-9a4b-49de-950a-6a2968728129" />
 
 For one month usage, it requires only `$0.0072* 730 = $5.256`, the total price of two instances is about `$11`
 
@@ -110,5 +110,6 @@ For one month usage, it requires only `$0.0072* 730 = $5.256`, the total price o
 ## Cost comparison
 
 ## Terraform project structure
+
 
 ## 
