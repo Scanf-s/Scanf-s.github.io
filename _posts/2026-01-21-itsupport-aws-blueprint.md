@@ -104,7 +104,7 @@ For one month usage, it requires only `$0.0072* 730 = $5.256`, the total price o
 # Result
 
 ## Updated AWS architecture
-<img width="3391" height="2674" alt="SSU_ITSUPPORT" src="https://github.com/user-attachments/assets/3ac1eeae-59d6-446e-8547-2d6167d89e44" />
+<img width="3391" height="2674" alt="SSU_ITSUPPORT" src="https://github.com/user-attachments/assets/68bdb953-8933-4d74-8baf-0b0b07086009" />
 
 ## Availability evaluation
 
@@ -114,5 +114,6 @@ For one month usage, it requires only `$0.0072* 730 = $5.256`, the total price o
 
 
 ## 
+
 
 
