@@ -12,7 +12,7 @@ The current ITSupport AWS infrastructure faces several challenges, including low
 This document proposes technical resolutions and a refined AWS architecture to address these issues.
 
 ## Previous AWS Infrastructure
-<img width="820" height="546" alt="image" src="https://github.com/user-attachments/assets/8485a6f3-04b1-4d95-afb7-7730a0116764" />
+<img width="800" height="600" alt="image" src="https://github.com/user-attachments/assets/7f0c7be7-d793-4f54-b5b2-f67eb8a6db65" />
 
 ### 1. Availability Issue
 The previous infrastructure had a Single Point of Failure (SPOF). 
@@ -114,6 +114,7 @@ For one month usage, it requires only `$0.0072* 730 = $5.256`, the total price o
 
 
 ## 
+
 
 
 
