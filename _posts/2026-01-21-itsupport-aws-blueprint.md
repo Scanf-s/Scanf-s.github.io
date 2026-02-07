@@ -1,3 +1,4 @@
+---
 layout: post
 title:  "Cloud Infrastructure Improvement Strategy: ITSupport student club AWS infrastructure optimization"
 date:   2026-01-21 22:00:00 +0900
@@ -113,6 +114,7 @@ For one month usage, it requires only `$0.0072* 730 = $5.256`, the total price o
 
 
 ## 
+
 
 
 
