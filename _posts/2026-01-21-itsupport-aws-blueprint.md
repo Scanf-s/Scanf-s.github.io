@@ -1,4 +1,3 @@
----
 layout: post
 title:  "Cloud Infrastructure Improvement Strategy: ITSupport student club AWS infrastructure optimization"
 date:   2026-01-21 22:00:00 +0900
@@ -104,7 +103,7 @@ For one month usage, it requires only `$0.0072* 730 = $5.256`, the total price o
 # Result
 
 ## Updated AWS architecture
-<img width="3391" height="2674" alt="SSU_ITSUPPORT" src="https://github.com/user-attachments/assets/68bdb953-8933-4d74-8baf-0b0b07086009" />
+<img width="3132" height="2164" alt="SSU_ITSUPPORT (1)" src="https://github.com/user-attachments/assets/6580a8d0-452b-4710-bd7b-a6d61168b128" />
 
 ## Availability evaluation
 
@@ -114,6 +113,7 @@ For one month usage, it requires only `$0.0072* 730 = $5.256`, the total price o
 
 
 ## 
+
 
 
 
