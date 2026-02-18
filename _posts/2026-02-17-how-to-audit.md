@@ -85,9 +85,9 @@ RDS는 다음과 같은 기본 설정이 활성화되어있다.
 ### SSM Session Manager Logging
 
 - 우선 SSM Session Manager를 통해 접근하는 경우, 반드시 로깅을 통해 사용자가 어떤 행위를 수행하였는지 기록해야 했다. AWS에서는 이를 위해 SSM 사용에 대한 접근 기록을 CloudWatch Log와 S3 버킷에 저장하는 기능을 제공한다.
-  ![image](img/2026-02-17-how-to-make-our-database-more-secure_1.png)
+  ![image](/assets/img/posts/2026-02-17-how-to-make-our-database-more-secure_1.png)
 - CloudWatch 로깅의 경우, 실시간으로 접근 기록을 확인할 수 있다는 장점이 있지만, 비용이 발생한다는 단점이 존재한다. 반면, S3 로깅의 경우 거의 무료로 사용이 가능하기 때문에 최소 비용 원칙을 위해 S3에 저장하도록 설정하였다. 이때, 로그에는 PII가 존재할 가능성이 있으므로 S3 버킷은 반드시 암호화된 버킷을 사용하도록 강제하였다.
-  ![image](img/2026-02-17-how-to-make-our-database-more-secure_2.png)
+  ![image](/assets/img/posts/2026-02-17-how-to-make-our-database-more-secure_2.png)
 
 이때, 로그를 저장하기 위해서 Session Manager가 S3에 저장 및 암호화 검증을 할 수 있는 권한이 주어져야 하는데, 이는 EC2 InstanceRole에 다음과 같은 정책을 부착해주면 된다.
 
@@ -112,7 +112,7 @@ RDS는 다음과 같은 기본 설정이 활성화되어있다.
   ```
 
 해당 정책 적용 후 SSM을 통해 EC2에 접속하여 명령을 수행했을 때 다음과 같이 S3에 저장이 되는 모습을 확인할 수 있다.
-![image](img/2026-02-17-how-to-make-our-database-more-secure_3.png)
+![image](/assets/img/posts/2026-02-17-how-to-make-our-database-more-secure_3.png)
 
 > **해당 로그를 통해 관리자는 어떤 IAM USER가 어떤 시점에 SSM을 통해 어떤 INSTANCE에 접근하였는지 바로 알 수 있게 된다.**
 

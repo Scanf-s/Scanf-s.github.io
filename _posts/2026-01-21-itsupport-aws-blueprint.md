@@ -17,12 +17,12 @@ Also, we must keep our AWS costs under `$150` per month.
 
 ### Previous AWS Infrastructure
 
-![Previous AWS Infrastructure](img/2026-01-21-itsupport-aws-blueprint_0.png)
+![Previous AWS Infrastructure](/assets/img/posts/2026-01-21-itsupport-aws-blueprint_0.png)
 
 ### Current Cost Evaluation
 
 > As you can see, our old AWS infrastructure was not cost-effective. It costs more than `$150` per month, which is too expensive for us.
-![Cost Evaluation](img/2026-01-21-itsupport-aws-blueprint_1.png)
+![Cost Evaluation](/assets/img/posts/2026-01-21-itsupport-aws-blueprint_1.png)
 
 #### 1. Availability Issue
 
@@ -71,15 +71,15 @@ To save money, I switched to Spot Instances for development.
 **First**, I put multiple containers (Spring Boot for Student Council, Django for Club Homepage, etc.) onto one cheap t4g.medium Spot Instance. 
 This gives us 2 vCPU and 4GB RAM for development at a much lower price.
 I calculated the monthly cost for a `t4g.medium` spot instance in the Seoul region. For one month, it costs approximately `$0.0072 * 750 = $5.4` + `$0.0036 * 750 = $2.7` = `$8.1` per month.
-![Spot Instance](img/2026-01-21-itsupport-aws-blueprint_3.png)
-![Current Calculated Cost](img/2026-01-21-itsupport-aws-blueprint_6.png)
+![Spot Instance](/assets/img/posts/2026-01-21-itsupport-aws-blueprint_3.png)
+![Current Calculated Cost](/assets/img/posts/2026-01-21-itsupport-aws-blueprint_6.png)
 
 **Second**, NAT instances must rarely stop. To improve speed and cost, I chose the t4g.micro instance. It has more vCPU and network speed than the t2.micro.
 > (Ref: https://aws.amazon.com/ko/ec2/instance-types/t4/)
 
 Also, our old t2.micro NAT instances were enough for our traffic. Our services are only for Soongsil University students, so our network traffic is not very high. As you can see in the image below, usage is low even with a t2.micro instance. So I combined all NAT instances into one t4g.micro instance.
 
-![NAT Instance](img/2026-01-21-itsupport-aws-blueprint_4.png)
+![NAT Instance](/assets/img/posts/2026-01-21-itsupport-aws-blueprint_4.png)
 
 **Third**, if AWS stops the spot instance, we need to make sure containers and data restart automatically. To do this, we create a Spot Instance with the `Permanent` option. This automatically requests a new instance if the old one stops. Also, the `Stop` policy keeps the instance ID and volume even if the instance stops. If the volume is safe, Docker can restart the containers automatically after the instance restarts. (We must set the `unless-stopped` restart policy for our containers. This makes sure the container restarts after the instance restarts.)
 
@@ -151,7 +151,7 @@ However, we must update the connection details because the database moved to a c
 
 ### Updated AWS architecture
 
-![Updated AWS Infrastructure](img/2026-01-21-itsupport-aws-blueprint_5.png)
+![Updated AWS Infrastructure](/assets/img/posts/2026-01-21-itsupport-aws-blueprint_5.png)
 
 ### Availability evaluation
 
