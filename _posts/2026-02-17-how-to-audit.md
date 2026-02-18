@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "[Final] 학생 조직용 최소비용 DB 보안 아키텍처 (Audit & Logging)"
+title:  "How to audit our development environment and secure PII"
 date:   2026-02-18 02:00:00 +0900
 categories: [Database, Security]
 tags: [Database, Security, Audit, Logging, Cost]
@@ -59,7 +59,7 @@ RDS는 다음과 같은 기본 설정이 활성화되어있다.
 
 ## Solutions
 
-### 1. Dev 환경 접속 최소화
+### Dev 환경 접속 최소화
 
 - Development 환경은 CloudFront 배포를 위해 Public subnet에 노출되어 있다. 때문에 외부로부터의 접근은 앱 포트를 제외하고는 모두 Security Group 설정을 통해 차단해주었다.
 - 또한, Docker compose로 실행되는 데이터베이스의 경우 단순히 `ports` 설정을 통해 (보안그룹을 통해 막아두었지만) 외부로부터 누구나 포트 번호를 통해 들어올 수 있는 상태였다. 이를 localhost 및 컨테이너 네트워크 접근만 가능하도록 설정을 수정해주었다.
@@ -69,7 +69,9 @@ RDS는 다음과 같은 기본 설정이 활성화되어있다.
   aws ssm start-session --target 개발EC2인스턴스ID --document-name AWS-StartPortForwardingSession --parameters "portNumber=데이터베이스포트번호,localPortNumber=로컬에서접속할포트번호"
   ```
 
-#### 2. 데이터베이스 권장 계정 정책 설정
+---
+
+### 데이터베이스 권장 계정 정책 설정
 
 - 서비스 운영용 계정
   - 총학생회 홈페이지 서비스의 경우에는 `backend` 라는 테이블의 CRUD 작업을 수행해야 하므로, 해당 계정에 대한 권한을 다음 명령을 사용하여 설정해주었다.
@@ -80,7 +82,7 @@ RDS는 다음과 같은 기본 설정이 활성화되어있다.
 
 ---
 
-### 2. SSM Session Manager Logging
+### SSM Session Manager Logging
 
 - 우선 SSM Session Manager를 통해 접근하는 경우, 반드시 로깅을 통해 사용자가 어떤 행위를 수행하였는지 기록해야 했다. AWS에서는 이를 위해 SSM 사용에 대한 접근 기록을 CloudWatch Log와 S3 버킷에 저장하는 기능을 제공한다.
   ![image](img/2026-02-17-how-to-make-our-database-more-secure_1.png)
@@ -109,11 +111,44 @@ RDS는 다음과 같은 기본 설정이 활성화되어있다.
   }
   ```
 
+해당 정책 적용 후 SSM을 통해 EC2에 접속하여 명령을 수행했을 때 다음과 같이 S3에 저장이 되는 모습을 확인할 수 있다.
+![image](img/2026-02-17-how-to-make-our-database-more-secure_3.png)
+
+> **해당 로그를 통해 관리자는 어떤 IAM USER가 어떤 시점에 SSM을 통해 어떤 INSTANCE에 접근하였는지 바로 알 수 있게 된다.**
+
 ---
 
-### 3. 로그에서 PII 제거
+### 로그에서 PII 제거
 
-S3에 저장되는 로그에는 개발자의 활동 내역뿐만 아니라, 데이터베이스 조회 명령어 등이 포함될 수 있다. 따라서 S3에 저장된 내역 중 PII를 식별하여 제거할 수 있는 로직이 필요하다.
+그런데, 현재 S3에 저장되는 로그에는 개발자의 활동 내역뿐만 아니라, 데이터베이스 조회 명령어 등이 포함될 수 있다. 예를 들어, S3에 저장된 내역 중에는 PII가 들어있거나, 민감 환경 변수 내용이 보여질 수 있다. 때문에 해당 내용을 식별하여 제거할 수 있는 어플리케이션이 필요하다.
+
+AWS에서는 이를 위해 S3 버킷 저장 시 PII 정보를 식별하여 이를 필터링해주는 AWS Lambda 통합 기능을 지원하고 있다.
+사용자가 Session manager 종료 또는 Timeout으로 인해 로그아웃 시 Session manager에서 발생한 모든 로그를 S3에 저장하게 되는데, S3에 부착된 Lambda가 데이터를 전달받아서 필터링된 로그를 덮어쓰게 된다.
+
+- ANSI코드 제거: 불필요한 ANSI 코드를 제거하여 로그를 더 깔끔하게 기록한다.
+- PII 및 민감 정보를 식별하여 제거: 사용자 정보, IP 정보, 인스턴스 ID, 데이터베이스 접속 정보, 환경 변수 정보를 제거한다.
+- S3에 로그 저장: 필터링이 완료된 로그를 S3에 저장한다.
+
+#### 1. Lambda 로직 코드 스니펫
+
+#### 2. IAM Policy 및 Role 설정
+
+#### 3. S3 설정
+
+---
+
+### 세션 시작 Discord 알람
+
+SSM 세션 시작 시 Eventbridge를 사용하여 세션 시작 및 종료 알림이 디스코드 채널을 통해 전달되도록 구현하였다.
+해당 알림이 발생하는 경우, 어떤 IAM User가 어떤 EC2 인스턴스에, 언제 접속했는지 확인할 수 있게 되므로 추적이 더 용이해진다.
+
+#### 1. Eventbridge 설정
+
+#### 2. Session Manager 설정
+
+#### 3. IAM Policy 생성 및 Role 설정
+
+#### 4. Discord Webhook 설정
 
 ---
 
