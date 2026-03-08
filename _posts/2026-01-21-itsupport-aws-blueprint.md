@@ -169,3 +169,6 @@ For development, we compromised slightly on availability to save money. Spot Ins
 
 When reporting cost results, use finalized Cost Explorer data (`Estimated = false`) and compare the same time window and service scope.
 For the homepage backend, cost changes during migration should be read as mixed effects (architecture/runtime/desired count), not a single-factor result.
+
+Cost optimization point -> Feb.16th
+![image](/assets/img/posts/2026-01-21-itsupport-aws-blueprint_7.png)
