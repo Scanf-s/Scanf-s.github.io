@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Boeing Internship: Lessons Learned"
-date:   2026-03-13 09:00:00 +0900
+date:   2026-03-12 09:00:00 +0900
 categories: [Review]
 tags: [Boeing]
 ---
