@@ -145,7 +145,7 @@ Since we are using ECS Fargate as our production environment, we couldn't access
 
 **Centralized monitoring system**
 
-![image4](/assets/img/posts/2026-03-14-observability-improvement-plan-for-our-services_3.svg)
+![image4](/assets/img/posts/2026-03-14-observability-improvement-plan-for-our-services_3.png)
 
 We will use `Prometheus + Grafana Loki` for our centralized monitoring system. It is open source, widely used monitoring system. Furthermore, we have to optimize the AWS Cost as much as possible.
 
