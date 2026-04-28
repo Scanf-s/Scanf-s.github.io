@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "RAG System Implementation"
-date:   2026-03-34 09:00:00 +0900
+date:   2026-03-30 09:00:00 +0900
 categories: [AI]
 tags: [OpenAI, RAG, Backend]
 ---

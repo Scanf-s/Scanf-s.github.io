@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Optimizing CI/CD Duration with Self-Hosted Runners in GitHub Actions"
-date:   2026-04-28 00:00:00 +0900
+date:   2026-04-27 00:00:00 +0900
 categories: [DevOps]
 tags: [CI/CD, GitHub Actions, AWS, EC2, ARM64]
 ---
@@ -40,6 +40,8 @@ Instead of just managing a generic server, we registered AWS EC2 instances (such
 ## The Result
 
 The quantitative improvements after switching to self-hosted runners are summarized below:
+
+![image](/assets/img/posts/2026-04-28-github-actions-self-hosted-runner-1.png)
 
 | Metric | GitHub-hosted (QEMU) | Self-hosted (Native ARM64) | Improvement |
 | :--- | :--- | :--- | :--- |
