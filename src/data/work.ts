@@ -21,7 +21,7 @@ export const work: WorkItem[] = [
       'Built a 750+ test pipeline from scratch, lifting coverage to 76% on a FastAPI backend. Python · FastAPI · PostgreSQL',
   },
   {
-    period: 'Mar.2025 — now',
+    period: 'Sep.2024 — now',
     role: 'Backend Developer / DevOps',
     org: 'Soongsil Univ. ITSupport (student club)',
     summary:
