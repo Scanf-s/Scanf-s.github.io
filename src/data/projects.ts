@@ -7,6 +7,13 @@ export interface Project {
 
 export const projects: Project[] = [
   {
+    name: 'Container runtime',
+    description:
+      'A from-scratch container runtime in Rust that isolates the filesystem, processes, and resources using Linux namespaces, cgroups v2, and pivot_root.',
+    tech: ['Rust', 'Linux', 'cgroups v2'],
+    href: 'https://github.com/Scanf-s/container-runtime',
+  },
+  {
     name: 'Single Sign-On service (private)',
     description:
       'Serverless SSO for the club’s services using AWS Cognito; migrated Python → Go to cut Lambda cold-starts, holding ~124ms average auth latency.',
