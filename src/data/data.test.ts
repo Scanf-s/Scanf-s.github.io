@@ -6,12 +6,16 @@ import { skills } from './skills';
 describe('portfolio data integrity', () => {
   it('every work item has all required fields', () => {
     for (const w of work) {
-      expect(w.period && w.role && w.org && w.summary).toBeTruthy();
+      expect(w.period).toBeTruthy();
+      expect(w.role).toBeTruthy();
+      expect(w.org).toBeTruthy();
+      expect(w.summary).toBeTruthy();
     }
   });
   it('every project has a name, description, and at least one tech tag', () => {
     for (const p of projects) {
-      expect(p.name && p.description).toBeTruthy();
+      expect(p.name).toBeTruthy();
+      expect(p.description).toBeTruthy();
       expect(p.tech.length).toBeGreaterThan(0);
     }
   });
