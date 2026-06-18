@@ -16,7 +16,14 @@ const dateStr = pubDate.toISOString().slice(0, 10);
   .post { padding: 40px 0; }
   .post h1 { font-size: 28px; font-weight: 500; line-height: 1.2; margin: 0 0 24px; }
   .post-body :global(h2) { font-size: 20px; font-weight: 500; margin: 32px 0 12px; }
+  .post-body :global(h3) { font-size: 17px; font-weight: 500; margin: 24px 0 8px; }
   .post-body :global(pre) { background: var(--bg-subtle); padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 14px; }
   .post-body :global(code) { font-family: var(--font-mono); }
+  .post-body :global(:not(pre) > code) { background: var(--bg-subtle); padding: 1px 5px; border-radius: 4px; font-size: 0.9em; }
   .post-body :global(p) { margin: 0 0 16px; }
+  .post-body :global(img) { max-width: 100%; height: auto; display: block; margin: 20px 0; border: 0.5px solid var(--rule); border-radius: 8px; }
+  .post-body :global(blockquote) { margin: 16px 0; padding: 4px 0 4px 16px; border-left: 2px solid var(--rule); color: var(--text-muted); }
+  .post-body :global(a) { text-decoration: underline; text-underline-offset: 2px; }
+  .post-body :global(ul), .post-body :global(ol) { padding-left: 22px; margin: 0 0 16px; }
+  .post-body :global(li) { margin: 4px 0; }
 </style>
