@@ -13,13 +13,13 @@ export const work: WorkItem[] = [
     summary: 'ASP.NET · Blazor application maintenance, optimization',
   },
   {
-    period: 'Jun.2025 - Sep.2025',
+    period: 'Jun.2025 — Sep.2025',
     role: 'Python Developer Intern',
     org: 'PTKOREA',
     summary: 'Implemented over 750 unit and integration tests using Pytest in a FastAPI application.',
   },
   {
-    period: 'Sep.2024 - Jun.2025',
+    period: 'Sep.2024 — Jun.2025',
     role: 'Associate Undergrad Researcher',
     org: 'System software lab, Soongsil University',
     summary: 'AI workflow integration/development with FastAPI backend application'
