@@ -1,0 +1,22 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { publishedPosts } from '../../lib/posts';
+const posts = publishedPosts(await getCollection('blog'));
+---
+<Base title="Blog — Uijong" description="Writing on systems, Rust, and open source.">
+  <section style="padding: 40px 0;">
+    <p class="section-label">Writing</p>
+    {posts.map((p) => (
+      <a href={`/blog/${p.id}`} class="row">
+        <span class="row-title">{p.data.title}</span>
+        <span class="mono row-date">{p.data.pubDate.toISOString().slice(0, 10)}</span>
+      </a>
+    ))}
+  </section>
+</Base>
+<style>
+  .row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 12px 0; border-top: 0.5px solid var(--rule); }
+  .row-title { font-size: 15px; }
+  .row-date { font-size: 12px; color: var(--text-faint); white-space: nowrap; }
+</style>

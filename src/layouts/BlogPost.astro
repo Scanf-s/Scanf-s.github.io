@@ -1,0 +1,22 @@
+---
+import Base from './Base.astro';
+interface Props { title: string; description: string; pubDate: Date; }
+const { title, description, pubDate } = Astro.props;
+const dateStr = pubDate.toISOString().slice(0, 10);
+---
+<Base title={`${title} — Uijong`} description={description}>
+  <article class="post">
+    <p class="section-label">{dateStr}</p>
+    <h1>{title}</h1>
+    <div class="post-body"><slot /></div>
+    <p style="margin-top:40px"><a href="/blog" class="mono">← all posts</a></p>
+  </article>
+</Base>
+<style>
+  .post { padding: 40px 0; }
+  .post h1 { font-size: 28px; font-weight: 500; line-height: 1.2; margin: 0 0 24px; }
+  .post-body :global(h2) { font-size: 20px; font-weight: 500; margin: 32px 0 12px; }
+  .post-body :global(pre) { background: var(--bg-subtle); padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 14px; }
+  .post-body :global(code) { font-family: var(--font-mono); }
+  .post-body :global(p) { margin: 0 0 16px; }
+</style>
