@@ -23,9 +23,9 @@ export const work: WorkItem[] = [
   {
     period: 'Mar.2025 — now',
     role: 'Backend Developer / DevOps',
-    org: 'Soongsil Univ. ITSupport',
+    org: 'Soongsil Univ. ITSupport (student club)',
     summary:
-      'Backend and cloud infrastructure for university IT services. Go · Rust · AWS · Terraform',
+      'Backend and cloud infrastructure for the university IT committee. Go · Python · Rust · SpringBoot · AWS · Terraform',
   },
   {
     period: 'Sep.2024 — Jun.2025',

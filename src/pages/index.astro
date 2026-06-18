@@ -30,7 +30,7 @@ const recentPosts = publishedPosts(await getCollection('blog')).slice(0, 5);
     <Image src={profile} width={184} alt="Uijong, manga-style self-portrait" class="avatar" />
   </section>
 
-  <Section id="work" label="Work">
+  <Section id="experience" label="Experience">
     {work.map((item) => <WorkItem item={item} />)}
   </Section>
 
