@@ -1,6 +1,86 @@
 ---
 import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import WorkItem from '../components/WorkItem.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { getCollection } from 'astro:content';
+import { publishedPosts } from '../lib/posts';
+import { work } from '../data/work';
+import { projects } from '../data/projects';
+import { skills } from '../data/skills';
+
+const recentPosts = publishedPosts(await getCollection('blog')).slice(0, 5);
 ---
 <Base title="Uijong" description="Software engineer working on low-level systems and open source.">
-  <p style="padding: 40px 0;">Landing page coming soon.</p>
+  <section id="about" class="hero">
+    <div class="hero-text">
+      <p class="section-label">// software engineer</p>
+      <h1>Hi, I'm Uijong.</h1>
+      <p class="tagline">I build low-level systems and contribute to open-source container runtimes like youki. Rust, Linux, and the unglamorous plumbing.</p>
+      <div class="socials mono">
+        <a href="https://github.com/Scanf-s">GitHub</a>
+        <a href="https://www.linkedin.com/">LinkedIn</a>
+        <a href="mailto:ssu.uijong@gmail.com">Email</a>
+      </div>
+    </div>
+    <img src="/profile.svg" width="92" height="92" alt="Uijong" class="avatar" />
+  </section>
+
+  <Section id="work" label="Work">
+    {work.map((item) => <WorkItem item={item} />)}
+  </Section>
+
+  <Section id="projects" label="Projects">
+    <div class="project-grid">
+      {projects.map((p) => <ProjectCard project={p} />)}
+    </div>
+  </Section>
+
+  <Section id="oss" label="Open source">
+    <div class="oss-item">
+      <span class="mono oss-tag">PR</span>
+      <div>
+        <p class="oss-name">youki <span class="oss-role">— contributor</span></p>
+        <p class="oss-desc">Container runtime in Rust. <a href="https://github.com/youki-dev/youki/pulls?q=is:pr+author:Scanf-s">Merged PRs →</a></p>
+      </div>
+    </div>
+  </Section>
+
+  <Section id="skills" label="Skills">
+    <div class="chips">
+      {skills.map((s) => <span class="mono chip">{s}</span>)}
+    </div>
+  </Section>
+
+  <Section id="writing" label="Writing">
+    {recentPosts.map((p) => (
+      <a href={`/blog/${p.id}`} class="row">
+        <span class="row-title">{p.data.title}</span>
+        <span class="mono row-date">{p.data.pubDate.toISOString().slice(0, 10)}</span>
+      </a>
+    ))}
+    <a href="/blog" class="mono more">all posts →</a>
+  </Section>
 </Base>
+<style>
+  .hero { display: flex; gap: 24px; align-items: flex-start; justify-content: space-between; padding: 48px 0 8px; }
+  .hero-text { flex: 1; }
+  .avatar { border-radius: 50%; flex-shrink: 0; }
+  .hero h1 { font-size: 32px; font-weight: 500; line-height: 1.2; margin: 0 0 12px; }
+  .tagline { font-size: 16px; color: var(--text-muted); margin: 0 0 16px; max-width: 46ch; }
+  .socials { display: flex; gap: 16px; font-size: 13px; }
+  .socials a { color: var(--text-muted); }
+  .project-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 480px) { .project-grid { grid-template-columns: 1fr; } }
+  .oss-item { display: flex; gap: 14px; align-items: baseline; }
+  .oss-tag { font-size: 12px; color: var(--text-faint); }
+  .oss-name { font-size: 15px; font-weight: 500; margin: 0; }
+  .oss-role { font-weight: 400; color: var(--text-muted); }
+  .oss-desc { font-size: 14px; color: var(--text-muted); margin: 2px 0 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { font-size: 12px; border: 0.5px solid var(--rule); border-radius: 8px; padding: 4px 10px; color: var(--text-muted); }
+  .row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 8px 0; }
+  .row-title { font-size: 14px; }
+  .row-date { font-size: 12px; color: var(--text-faint); white-space: nowrap; }
+  .more { display: inline-block; margin-top: 12px; font-size: 13px; color: var(--text-muted); }
+</style>

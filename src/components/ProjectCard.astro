@@ -1,0 +1,18 @@
+---
+import type { Project } from '../data/projects';
+interface Props { project: Project; }
+const { project } = Astro.props;
+const Tag = project.href ? 'a' : 'div';
+---
+<Tag class="card" {...project.href ? { href: project.href } : {}}>
+  <p class="name">{project.name}</p>
+  <p class="desc">{project.description}</p>
+  <span class="mono tech">{project.tech.join(' · ')}</span>
+</Tag>
+<style>
+  .card { display: block; border: 0.5px solid var(--rule); border-radius: 8px; padding: 12px 14px; }
+  a.card:hover { border-color: var(--text-faint); }
+  .name { font-size: 14px; font-weight: 500; margin: 0 0 4px; }
+  .desc { font-size: 13px; color: var(--text-muted); margin: 0 0 8px; line-height: 1.5; }
+  .tech { font-size: 11px; color: var(--text-faint); }
+</style>

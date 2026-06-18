@@ -1,0 +1,11 @@
+---
+interface Props { id: string; label: string; }
+const { id, label } = Astro.props;
+---
+<section id={id} class="section">
+  <p class="section-label">{label}</p>
+  <slot />
+</section>
+<style>
+  .section { border-top: 0.5px solid var(--rule); padding-top: 24px; margin-top: 36px; scroll-margin-top: 64px; }
+</style>
