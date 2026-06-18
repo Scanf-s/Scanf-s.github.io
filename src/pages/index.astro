@@ -9,20 +9,22 @@ import { publishedPosts } from '../lib/posts';
 import { work } from '../data/work';
 import { projects } from '../data/projects';
 import { skills } from '../data/skills';
+import { oss } from '../data/oss';
 import profile from '../assets/profile.png';
 
 const recentPosts = publishedPosts(await getCollection('blog')).slice(0, 5);
 ---
-<Base title="Uijong" description="Software engineer working on low-level systems and open source.">
+<Base title="Uijong" description="Uijong Yang — software engineer at Boeing Korea focused on backend and cloud systems.">
   <section id="about" class="hero">
     <div class="hero-text">
       <p class="section-label">// software engineer</p>
       <h1>Hi, I'm Uijong.</h1>
-      <p class="tagline">I build low-level systems and contribute to open-source container runtimes like youki. Rust, Linux, and the unglamorous plumbing.</p>
+      <p class="tagline">CS undergrad at Soongsil University and a software engineer at Boeing Korea. I work on backend and cloud systems — interested in virtualization, observability, and reliable infrastructure.</p>
       <div class="socials mono">
         <a href="https://github.com/Scanf-s">GitHub</a>
-        <a href="https://www.linkedin.com/">LinkedIn</a>
-        <a href="mailto:ssu.uijong@gmail.com">Email</a>
+        <a href="https://www.linkedin.com/in/ui-jong-yang/">LinkedIn</a>
+        <a href="mailto:sullung2yo@gmail.com">Email</a>
+        <a href="/resume.pdf">Résumé</a>
       </div>
     </div>
     <Image src={profile} width={184} alt="Uijong, manga-style self-portrait" class="avatar" />
@@ -39,13 +41,15 @@ const recentPosts = publishedPosts(await getCollection('blog')).slice(0, 5);
   </Section>
 
   <Section id="oss" label="Open source">
-    <div class="oss-item">
-      <span class="mono oss-tag">PR</span>
-      <div>
-        <p class="oss-name">youki <span class="oss-role">— contributor</span></p>
-        <p class="oss-desc">Container runtime in Rust. <a href="https://github.com/youki-dev/youki/pulls?q=is:pr+author:Scanf-s">Merged PRs →</a></p>
+    {oss.map((p) => (
+      <div class="oss-item">
+        <p class="oss-head">
+          <a class="oss-name" href={p.url}>{p.name}</a>
+          <span class="oss-prs mono">{p.prs.map((pr) => <a href={pr.url}>{pr.label}</a>)}</span>
+        </p>
+        {p.description && <p class="oss-desc">{p.description}</p>}
       </div>
-    </div>
+    ))}
   </Section>
 
   <Section id="skills" label="Skills">
@@ -74,10 +78,11 @@ const recentPosts = publishedPosts(await getCollection('blog')).slice(0, 5);
   .socials a { color: var(--text-muted); }
   .project-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   @media (max-width: 480px) { .project-grid { grid-template-columns: 1fr; } }
-  .oss-item { display: flex; gap: 14px; align-items: baseline; }
-  .oss-tag { font-size: 12px; color: var(--text-faint); }
-  .oss-name { font-size: 15px; font-weight: 500; margin: 0; }
-  .oss-role { font-weight: 400; color: var(--text-muted); }
+  .oss-item { margin-bottom: 16px; }
+  .oss-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 0; }
+  .oss-name { font-size: 15px; font-weight: 500; }
+  .oss-prs { display: inline-flex; gap: 8px; flex-wrap: wrap; }
+  .oss-prs a { font-size: 12px; color: var(--text-faint); }
   .oss-desc { font-size: 14px; color: var(--text-muted); margin: 2px 0 0; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip { font-size: 12px; border: 0.5px solid var(--rule); border-radius: 8px; padding: 4px 10px; color: var(--text-muted); }

@@ -7,7 +7,7 @@ const { item } = Astro.props;
   <span class="mono period">{item.period}</span>
   <div>
     <p class="role">{item.role} · {item.org}</p>
-    <p class="summary">{item.summary}</p>
+    {item.summary && <p class="summary">{item.summary}</p>}
   </div>
 </div>
 <style>
