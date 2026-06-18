@@ -7,11 +7,6 @@ export interface WorkItem {
 
 export const work: WorkItem[] = [
   {
-    period: 'Jun.2026 — now',
-    role: 'Software Engineer',
-    org: 'Boeing Korea',
-  },
-  {
     period: 'Oct.2025 — Mar.2026',
     role: 'Cloud System SW Engineer Intern',
     org: 'Boeing Korea',
