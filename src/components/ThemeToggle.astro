@@ -1,0 +1,26 @@
+<button id="theme-toggle" aria-label="Toggle color theme" class="mono">
+  <span data-theme-icon>theme</span>
+</button>
+<style>
+  #theme-toggle {
+    background: none; border: none; cursor: pointer;
+    font-family: var(--font-mono); font-size: 13px; color: var(--text-muted); padding: 0;
+  }
+  #theme-toggle:hover { color: var(--link-hover); }
+</style>
+<script is:inline>
+  (() => {
+    const btn = document.getElementById('theme-toggle');
+    const label = () => {
+      const t = document.documentElement.getAttribute('data-theme') || 'light';
+      btn.querySelector('[data-theme-icon]').textContent = t === 'dark' ? 'light' : 'dark';
+    };
+    label();
+    btn.addEventListener('click', () => {
+      const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      label();
+    });
+  })();
+</script>

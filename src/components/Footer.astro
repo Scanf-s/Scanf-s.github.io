@@ -1,0 +1,22 @@
+---
+const year = new Date().getFullYear();
+const socials = [
+  { href: 'https://github.com/Scanf-s', label: 'GitHub' },
+  { href: 'https://www.linkedin.com/', label: 'LinkedIn' },
+  { href: 'mailto:ssu.uijong@gmail.com', label: 'Email' },
+];
+---
+<footer>
+  <div class="wrap foot-inner">
+    <div class="foot-links">
+      {socials.map((s) => <a href={s.href} class="mono">{s.label}</a>)}
+    </div>
+    <span class="mono copy">© {year} Uijong</span>
+  </div>
+</footer>
+<style>
+  footer { border-top: 0.5px solid var(--rule); margin-top: 64px; padding: 28px 0; }
+  .foot-inner { display: flex; justify-content: space-between; align-items: center; }
+  .foot-links { display: flex; gap: 16px; }
+  .foot-links a, .copy { font-size: 13px; color: var(--text-muted); }
+</style>

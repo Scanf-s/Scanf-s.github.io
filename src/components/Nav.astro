@@ -1,0 +1,27 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+const links = [
+  { href: '/#about', label: 'About' },
+  { href: '/#work', label: 'Work' },
+  { href: '/#projects', label: 'Projects' },
+  { href: '/#oss', label: 'OSS' },
+  { href: '/blog', label: 'Blog' },
+];
+---
+<nav>
+  <div class="wrap nav-inner">
+    <a href="/" class="mono brand">uijong</a>
+    <div class="nav-right">
+      {links.map((l) => <a href={l.href} class="nav-link">{l.label}</a>)}
+      <ThemeToggle />
+    </div>
+  </div>
+</nav>
+<style>
+  nav { border-bottom: 0.5px solid var(--rule); position: sticky; top: 0; background: var(--bg); z-index: 10; }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 52px; }
+  .brand { font-size: 14px; font-weight: 500; }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
+  .nav-link { font-size: 13px; color: var(--text-muted); }
+  @media (max-width: 480px) { .nav-link { display: none; } }
+</style>
