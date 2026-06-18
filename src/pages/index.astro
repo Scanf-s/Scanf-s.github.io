@@ -3,11 +3,13 @@ import Base from '../layouts/Base.astro';
 import Section from '../components/Section.astro';
 import WorkItem from '../components/WorkItem.astro';
 import ProjectCard from '../components/ProjectCard.astro';
+import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import { publishedPosts } from '../lib/posts';
 import { work } from '../data/work';
 import { projects } from '../data/projects';
 import { skills } from '../data/skills';
+import profile from '../assets/profile.png';
 
 const recentPosts = publishedPosts(await getCollection('blog')).slice(0, 5);
 ---
@@ -23,7 +25,7 @@ const recentPosts = publishedPosts(await getCollection('blog')).slice(0, 5);
         <a href="mailto:ssu.uijong@gmail.com">Email</a>
       </div>
     </div>
-    <img src="/profile.svg" width="92" height="92" alt="Uijong" class="avatar" />
+    <Image src={profile} width={184} alt="Uijong, manga-style self-portrait" class="avatar" />
   </section>
 
   <Section id="work" label="Work">
@@ -65,7 +67,7 @@ const recentPosts = publishedPosts(await getCollection('blog')).slice(0, 5);
 <style>
   .hero { display: flex; gap: 24px; align-items: flex-start; justify-content: space-between; padding: 48px 0 8px; }
   .hero-text { flex: 1; }
-  .avatar { border-radius: 50%; flex-shrink: 0; }
+  .avatar { width: 92px; height: 92px; border-radius: 50%; object-fit: cover; object-position: 50% 15%; flex-shrink: 0; }
   .hero h1 { font-size: 32px; font-weight: 500; line-height: 1.2; margin: 0 0 12px; }
   .tagline { font-size: 16px; color: var(--text-muted); margin: 0 0 16px; max-width: 46ch; }
   .socials { display: flex; gap: 16px; font-size: 13px; }

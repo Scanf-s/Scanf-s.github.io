@@ -1,1 +1,1 @@
-export const skills: string[] = ['Rust', 'Linux', 'Docker', 'Go', 'gRPC', 'Kubernetes'];
+export const skills: string[] = ['Python', 'Go', 'Rust', 'C#', 'AWS', 'Docker', 'Terraform'];
