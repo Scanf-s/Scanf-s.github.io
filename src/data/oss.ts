@@ -20,6 +20,16 @@ export const oss: OssProject[] = [
     ],
   },
   {
+    name: 'Youki',
+    url: 'https://github.com/youki-dev/youki',
+    description:
+      'A container runtime written in Rust. Fixed tiny bugs, added unit tests',
+    prs: [
+      { label: '#3602', url: 'https://github.com/youki-dev/youki/pull/3602' },
+      { label: '#3608', url: 'https://github.com/youki-dev/youki/pull/3608' },
+    ],
+  },
+  {
     name: 'vLLM Semantic Router',
     url: 'https://github.com/vllm-project/semantic-router',
     description:
