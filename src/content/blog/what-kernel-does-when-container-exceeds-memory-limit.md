@@ -187,9 +187,17 @@ That meant I could not observe "how the kernel chooses a victim" with `stress-ng
 - `candidate10mb`: touches 10MB
 - all three use `oom_score_adj=0` (the default, no self-marking)
 
-I put all three into the same 128MB container at once, where the total demand (140MB) is greater than the limit.
+I put all three into the same 128MB container at once, where the total demand (140MB) is larger than the limit, so an OOM was guaranteed.
 
-### Observation: biggest first, and only as much as needed
+### Observation: biggest first, then a second OOM
+
+The logs show two separate OOM events about 3ms apart, not one event that killed two processes. The timestamps make this clear.
+
+```
+55811.178199  Killed process 161410 (candidate100mb)   # OOM #1
+55811.181573  candidate30mb invoked oom-killer          # OOM #2, ~3.4ms later
+55811.181783  Killed process 161584 (candidate30mb)
+```
 
 **First OOM**, where all three are still in the candidate table:
 
@@ -201,7 +209,7 @@ I put all three into the same 128MB container at once, where the total demand (1
 -> Killed process 161410 (candidate100mb)
 ```
 
-**Second OOM** (3ms later), the largest one left after 100mb is gone:
+**Second OOM** (about 3ms later). In this candidate table, 100mb is already gone, and the largest one left is 30mb:
 
 ```
 -> Killed process 161584 (candidate30mb)
@@ -214,13 +222,19 @@ PID   USER     COMMAND
  1321 root     ./candidate10mb    # survived
 ```
 
-Three things are confirmed at once. Since every candidate had `oom_score_adj=0`, there is no self-marking variable in the way.
+Three things are confirmed. Since every candidate had `oom_score_adj=0`, there is no self-marking variable in the way.
 
 1. **Order**: the process that uses the most memory (100mb) dies first.
 2. **Selection**: the smallest process (10mb) survives.
-3. **Stopping condition**: the kernel stops the moment the usage drops below the limit. It does not kill everything.
+3. **One kill per OOM event**: each OOM event kills exactly one process. The second kill happened because a second charge failure triggered a second, separate OOM.
 
-Killing 100mb was not enough, so the kernel killed 30mb too. But once that brought the usage below the limit, the kernel left 10mb alone and stopped. The OOM Killer kills only as much as it needs.
+At first I read this as "killing 100mb was not enough, so the kernel kept killing down to the limit." But the numbers disprove that. At OOM #1, the rss_anon values were about 100MiB (100mb), 16MiB (30mb, still allocating), and 10MiB (10mb), so about 126MiB total against the 128MiB limit. If the kernel had killed 100mb and freed 100MiB, only about 26MiB would remain, which is far under the limit. So "not enough" cannot be the reason.
+
+What actually happened is an OOM overkill caused by asynchronous reclaim. A `SIGKILL` does not return memory right away. The real page reclaim is done later by the `oom_reaper`, which runs asynchronously. In the ~3.4ms gap after 100mb was killed, its memory was not returned yet, so `memory.current` was still near the limit. Meanwhile 30mb was still allocating, so it faulted again, the charge failed again, and this triggered OOM #2. In OOM #2, 100mb was already marked as a victim and excluded from reselection, so the largest remaining process, 30mb, was killed.
+
+And 10mb survived not because "the kernel stopped once it dropped below the limit," but because the process that was driving the allocation (30mb) was now dead, so no new page fault happened. 10mb had already finished writing and was sleeping, so it did not fault, and no third OOM was triggered.
+
+I want to be honest about the evidence here. The two-separate-OOM timing and the victim exclusion are both visible in the logs above. The asynchronous reclaim delay is the mechanism that best explains them, but I did not capture `memory.current` during that 3.4ms window, so I did not directly observe the delay itself. To confirm it on a re-run, you would watch whether `memory.current` stays near the limit through both kills and only drops after 30mb dies. The kernel-side anchors to read are `oom_reaper`, `MMF_OOM_SKIP`, and the victim exclusion in `oom_evaluate_task`. The term for this overkill pattern is "OOM overkill."
 
 This selection is handled by the kernel function `oom_badness()`. It scores each process based on its memory usage (mainly rss_anon), adds the `oom_score_adj` adjustment, and picks the highest score as the victim. This time every process had adj=0, so it was purely by memory size. Note that `oom_badness` is not a system call. It is an internal kernel function. User space does not call it. The kernel calls it internally to score processes during an OOM.
 
@@ -298,11 +312,11 @@ I started from one sentence and checked, step by step, what the kernel does when
 - **It attaches when you write.** Physical pages attach at the moment of writing (a page fault), not when memory is requested. The program that only used `reserve` did not die, while the one that touched memory with `extend` did.
 - **The budget fills up.** A cgroup OOM is not a physical RAM shortage but a memcg charge overflow. The proof is that the constraint was printed as `CONSTRAINT_MEMCG`.
 - **The kernel reclaims before it kills.** Even after hitting the limit, it tries reclaim first and only kills when that fails. With the anon plus swap-0 combination, there was no reclaimable target, so it always ended in an OOM.
-- **The biggest user dies, and only as much as needed.** With three processes that do not mark themselves, I confirmed that the kernel kills from the biggest down, only until the usage falls below the limit, and leaves the rest alive.
+- **The biggest process dies first, one per OOM event.** With three processes that do not mark themselves, I confirmed that the kernel picks the biggest process as the victim. When two processes died, it was two separate OOM events, not one. The likely cause is that a `SIGKILL` does not free memory instantly, since the `oom_reaper` reclaims it asynchronously, so the still-allocating process faulted again and triggered a second OOM. The smallest process survived because the process driving the allocation was gone, not because the kernel counted down to the limit.
 - **Counter, not log.** Because of printk suppression, log-based counting misses real kills. The `memory.events` counter is the source to trust.
 
 The part I valued most in this experiment was noticing the `oom_score_adj=1000` self-marking problem in `stress-ng`, and then building my own tool to get past that limit. The moment I realized that a tool which turns itself in cannot reveal the victim selection logic, the direction of the whole experiment became clear.
 
 ---
 
-*Environment: t4g.small (ARM64), Ubuntu 24.04, Linux 7.0.0-1006-aws, cgroup v2.*
+*Environment: t4g.small (ARM64), Ubuntu 24.04, Linux 7.0.0-1006-aws, cgroup v2. The Rust source for the hog programs and the full dmesg logs are available at [repository link].*
